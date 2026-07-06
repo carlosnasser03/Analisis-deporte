@@ -14,7 +14,6 @@ Author: Scout AI Pipeline
 Date: 2026-07-06
 """
 
-import cv2
 import numpy as np
 import logging
 from pathlib import Path
@@ -27,6 +26,7 @@ import traceback
 from tqdm import tqdm
 
 from .frame_processor import FrameProcessor, FrameData
+from ..utils.video_reader import VideoReader, OpenCVVideoReader
 
 
 @dataclass
@@ -259,16 +259,15 @@ class VideoProcessor:
             if not self.setup_detectors():
                 raise RuntimeError("Falló validación de detectores")
 
-            # Abrir video
-            cap = cv2.VideoCapture(str(video_path))
-            if not cap.isOpened():
+            # Abrir video usando VideoReader
+            video_reader = OpenCVVideoReader(logger=self.logger)
+            if not video_reader.open(str(video_path)):
                 raise RuntimeError(f"No se pudo abrir video: {video_path}")
 
             # Obtener propiedades del video
-            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-            frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            total_frames = video_reader.get_frame_count()
+            fps = video_reader.get_fps()
+            frame_width, frame_height = video_reader.get_resolution()
 
             self.logger.info(
                 f"Video: {frame_width}x{frame_height} @ {fps:.1f}fps, "
@@ -299,8 +298,8 @@ class VideoProcessor:
                 unit="frames",
                 leave=True
             ) as pbar:
-                while cap.isOpened() and processed_count < frames_to_process:
-                    ret, frame = cap.read()
+                while video_reader.is_opened() and processed_count < frames_to_process:
+                    ret, frame = video_reader.read_frame()
 
                     if not ret:
                         break
@@ -350,7 +349,7 @@ class VideoProcessor:
                     frame_num += 1
 
             # Cerrar video
-            cap.release()
+            video_reader.close()
 
             # Calcular estadísticas finales
             total_time = time.time() - start_time

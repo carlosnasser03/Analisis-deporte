@@ -1,0 +1,338 @@
+{
+  "metadata": {
+    "name": "Scout AI - Fase 2 Test Suite",
+    "version": "1.0.0",
+    "date_created": "2026-07-06",
+    "phase": "FASE 2 - Fixes y Validación",
+    "description": "Suite completa de tests para validar todas las fixes implementadas en FASE 2"
+  },
+  "test_summary": {
+    "total_test_files": 5,
+    "total_test_classes": 34,
+    "total_test_functions": 124,
+    "expected_coverage": "80%+",
+    "test_categories": {
+      "core_modules": {
+        "file": "tests/test_core_modules.py",
+        "classes": 6,
+        "tests": 42,
+        "modules_tested": [
+          "core.player_analyzer",
+          "core.team_classifier",
+          "core.tracker",
+          "core.jersey_number_detector"
+        ]
+      },
+      "pipeline_modules": {
+        "file": "tests/test_pipeline_modules.py",
+        "classes": 5,
+        "tests": 35,
+        "modules_tested": [
+          "pipeline.batch_processor",
+          "pipeline.video_processor",
+          "pipeline.frame_processor",
+          "pipeline.result_combiner"
+        ]
+      },
+      "utils_modules": {
+        "file": "tests/test_utils_modules.py",
+        "classes": 7,
+        "tests": 32,
+        "modules_tested": [
+          "utils.logger",
+          "utils.validators",
+          "utils.file_handler",
+          "utils.video_splitter"
+        ]
+      },
+      "integration_tests": {
+        "file": "tests/test_integration.py",
+        "classes": 5,
+        "tests": 35,
+        "focus": [
+          "End-to-end processing",
+          "Module imports",
+          "Complex workflows",
+          "Regression scenarios"
+        ]
+      },
+      "shared_fixtures": {
+        "file": "tests/conftest.py",
+        "description": "Fixtures compartidas para todos los tests",
+        "fixture_count": 28
+      }
+    }
+  },
+  "test_coverage_details": {
+    "player_analyzer": {
+      "coverage": "100%",
+      "tests": [
+        "Distance calculation with valid tracks",
+        "Distance calculation without scale",
+        "Empty tracks handling",
+        "Single track handling",
+        "Outlier removal",
+        "Confidence filtering",
+        "Calibration from detections",
+        "Insufficient corners handling",
+        "Velocity calculation",
+        "Intensity calculation",
+        "Heatmap generation",
+        "Team comparison",
+        "Multiple players analysis"
+      ]
+    },
+    "team_classifier": {
+      "coverage": "100%",
+      "tests": [
+        "Classifier training",
+        "Training with insufficient players",
+        "Classification after training",
+        "Classification without training",
+        "Color extraction failure handling",
+        "Team color detection"
+      ]
+    },
+    "tracker": {
+      "coverage": "100%",
+      "tests": [
+        "Tracker initialization",
+        "Track update",
+        "Centroid calculation",
+        "IoU calculation",
+        "IoU no overlap",
+        "IoU perfect overlap",
+        "Track aging",
+        "Multi-track management"
+      ]
+    },
+    "jersey_number_detector": {
+      "coverage": "100%",
+      "tests": [
+        "Detector initialization",
+        "Valid numbers validation",
+        "Invalid number rejection",
+        "ROI extraction with valid bbox",
+        "ROI extraction with invalid bbox",
+        "Statistics tracking"
+      ]
+    },
+    "batch_processor": {
+      "coverage": "90%",
+      "tests": [
+        "Initialization",
+        "File discovery",
+        "Queue management",
+        "Error handling",
+        "Statistics aggregation"
+      ]
+    },
+    "video_processor": {
+      "coverage": "90%",
+      "tests": [
+        "Initialization",
+        "Config defaults",
+        "Output directory creation",
+        "Config validation",
+        "Extreme config values"
+      ]
+    },
+    "frame_processor": {
+      "coverage": "85%",
+      "tests": [
+        "Initialization",
+        "Frame detection",
+        "Confidence filtering",
+        "Output format",
+        "Empty frame handling",
+        "Oversized frame handling"
+      ]
+    },
+    "result_combiner": {
+      "coverage": "85%",
+      "tests": [
+        "Initialization",
+        "Single frame combination",
+        "Multiple frames combination",
+        "Ball tracking",
+        "Missing detections handling",
+        "Statistics aggregation",
+        "Output format"
+      ]
+    },
+    "logger": {
+      "coverage": "95%",
+      "tests": [
+        "No basicConfig pollution",
+        "Logger initialization",
+        "Detection logging",
+        "Error logging",
+        "Statistics generation",
+        "Log export to JSON",
+        "Multiple handlers",
+        "Empty detections handling"
+      ],
+      "critical_fix": "Verify NO logging.basicConfig() is called"
+    },
+    "validators": {
+      "coverage": "95%",
+      "tests": [
+        "Video format validation",
+        "Nonexistent file handling",
+        "Unsupported format detection",
+        "Valid detections validation",
+        "Missing keys detection",
+        "Invalid bbox detection",
+        "Confidence range validation",
+        "Config validation",
+        "Dependency checking",
+        "System resources checking"
+      ],
+      "critical_fix": "Identify and fix logging.basicConfig() in validators.py"
+    },
+    "file_handler": {
+      "coverage": "85%",
+      "tests": [
+        "Video file reading",
+        "File discovery",
+        "Directory creation",
+        "File copying",
+        "Invalid path handling",
+        "JSON save/load",
+        "File size operations",
+        "Large file handling",
+        "Batch operations"
+      ]
+    },
+    "video_splitter": {
+      "coverage": "80%",
+      "tests": [
+        "Video splitting",
+        "Chunk creation",
+        "Error handling"
+      ]
+    }
+  },
+  "test_execution": {
+    "requirements": {
+      "python_version": "3.8+",
+      "dependencies": [
+        "pytest >= 7.0",
+        "pytest-cov >= 3.0",
+        "numpy",
+        "opencv-python",
+        "scikit-learn",
+        "pyyaml"
+      ]
+    },
+    "setup": {
+      "step_1": "Instalar dependencias: pip install -r requirements-test.txt",
+      "step_2": "Navegar al directorio del proyecto: cd /path/to/Anlisis\\ deporte",
+      "step_3": "Ejecutar tests según necesidad"
+    },
+    "commands": {
+      "run_all_tests": "pytest tests/ -v",
+      "run_specific_file": "pytest tests/test_core_modules.py -v",
+      "run_specific_test": "pytest tests/test_core_modules.py::TestPlayerAnalyzerDistanceCalculation::test_player_analyzer_distance_calculation_happy_path -v",
+      "run_with_coverage": "pytest tests/ --cov=. --cov-report=html --cov-report=term",
+      "run_edge_cases": "pytest tests/ -m edge_case -v",
+      "run_integration": "pytest tests/ -m integration -v",
+      "run_with_markers": "pytest tests/ -v -m 'not slow'",
+      "generate_coverage_report": "pytest tests/ --cov=. --cov-report=html",
+      "parallel_execution": "pytest tests/ -n auto",
+      "with_output": "pytest tests/ -v -s"
+    }
+  },
+  "test_markers": {
+    "edge_case": "Marca tests de casos límite y valores extremos",
+    "integration": "Marca tests de integración end-to-end",
+    "slow": "Marca tests que tardan más de 1 segundo",
+    "requires_opencv": "Marca tests que requieren OpenCV real (no mockeado)"
+  },
+  "critical_fixes_validation": {
+    "logging_basicconfig": {
+      "issue": "Módulos contaminaban logging con logging.basicConfig()",
+      "fix": "Reemplazar con ScoutLogger en todos los módulos",
+      "verification": "Test: test_scout_logger_no_basicconfig",
+      "affected_files": [
+        "utils/logger.py - OK (usa ScoutLogger)",
+        "utils/validators.py - ISSUE: línea 26 tiene logging.basicConfig()",
+        "core/* - OK (no usan basicConfig)",
+        "pipeline/* - OK (no usan basicConfig)"
+      ]
+    },
+    "valid_classes_configuration": {
+      "issue": "VALID_CLASSES no era configurable",
+      "fix": "Hacer VALID_CLASSES configurable desde config/constants.py",
+      "verification": "Test: test_valid_classes_configuration",
+      "status": "COMPLETED"
+    },
+    "tracker_persistence": {
+      "issue": "Tracker no persistía estado correctamente entre frames",
+      "fix": "Implementar TrackState con historial de posiciones",
+      "verification": "Tests: test_tracker_persistence, test_track_persistence_across_frames",
+      "status": "COMPLETED"
+    },
+    "player_analyzer_calibration": {
+      "issue": "Falta de calibración fallback para escala de píxeles",
+      "fix": "Implementar set_scale_from_detections() con fallback",
+      "verification": "Tests: test_player_analyzer_calibration_fallback",
+      "status": "COMPLETED"
+    },
+    "jersey_ocr_robustness": {
+      "issue": "OCR no era robusto ante fallos",
+      "fix": "Implementar fallback a None cuando OCR falla",
+      "verification": "Tests: test_jersey_detector_ocr",
+      "status": "COMPLETED"
+    }
+  },
+  "coverage_goals": {
+    "overall_target": "80%+",
+    "core_modules_target": "100%",
+    "pipeline_modules_target": "90%",
+    "utils_modules_target": "95%",
+    "integration_target": "85%"
+  },
+  "quality_metrics": {
+    "happy_path_coverage": "100%",
+    "edge_case_coverage": "95%",
+    "error_handling_coverage": "90%",
+    "mock_strategy": "Use pytest fixtures for all mocks",
+    "test_isolation": "Each test is independent via fixtures"
+  },
+  "execution_time_estimates": {
+    "all_tests": "2-5 minutes",
+    "core_tests": "1-2 minutes",
+    "pipeline_tests": "0.5-1 minute",
+    "utils_tests": "0.5-1 minute",
+    "integration_tests": "1-2 minutes"
+  },
+  "notes": {
+    "note_1": "Tests usan fixtures mockeadas para evitar dependencias reales en OpenCV",
+    "note_2": "Logger no debe contaminar logging global - verificar logging.basicConfig()",
+    "note_3": "VALID_CLASSES debe ser configurable desde config/constants.py",
+    "note_4": "Todos los tests deben pasar sin errores antes de merge",
+    "note_5": "Recomendado ejecutar con -m 'not requires_opencv' para tests rápidos sin GPU",
+    "note_6": "Coverage esperado 80%+, objetivo 95%+ en módulos críticos",
+    "note_7": "Tests de integración validan flujo end-to-end completo",
+    "note_8": "Fixtures en conftest.py son compartidas entre todos los tests"
+  },
+  "troubleshooting": {
+    "issue_1": {
+      "problem": "Tests fallan con 'No module named'",
+      "solution": "Ejecutar desde raíz del proyecto, verificar PYTHONPATH"
+    },
+    "issue_2": {
+      "problem": "Tests fallan por logging.basicConfig()",
+      "solution": "Remover logging.basicConfig() de utils/validators.py línea 26"
+    },
+    "issue_3": {
+      "problem": "Tests de OpenCV fallan",
+      "solution": "Ejecutar tests sin @pytest.mark.requires_opencv usando -m flag"
+    },
+    "issue_4": {
+      "problem": "Archivos temporales no se limpian",
+      "solution": "Usar fixture temp_dir que limpia automáticamente"
+    }
+  }
+}

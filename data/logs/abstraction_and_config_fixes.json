@@ -1,0 +1,253 @@
+{
+  "timestamp": "2026-07-06T14:15:00Z",
+  "project": "Scout AI Pipeline",
+  "task": "Arreglar BLOCKERS #3, #4, #5 - Abstracción y Configuración",
+  "status": "COMPLETED",
+  "blockers_fixed": [
+    {
+      "blocker_id": 3,
+      "title": "OpenCV Hardcoded (sin abstracción)",
+      "description": "cv2.VideoCapture/cvtColor en video_processor.py y frame_processor.py",
+      "solution": "Crear interfaz VideoReader abstracta con implementación OpenCV",
+      "files_modified": [
+        "utils/video_reader.py (NUEVO)",
+        "pipeline/video_processor.py",
+        "pipeline/frame_processor.py",
+        "utils/video_splitter.py",
+        "utils/validators.py"
+      ],
+      "changes": [
+        {
+          "file": "utils/video_reader.py",
+          "type": "CREATE",
+          "description": "Nueva abstracción para lectura de video",
+          "components": [
+            "VideoReader (clase abstracta)",
+            "OpenCVVideoReader (implementación)",
+            "ColorSpaceConverter (abstracción para conversiones de color)",
+            "VideoWriter (clase abstracta)",
+            "OpenCVVideoWriter (implementación)"
+          ]
+        },
+        {
+          "file": "pipeline/video_processor.py",
+          "type": "MODIFY",
+          "description": "Reemplazar cv2.VideoCapture con OpenCVVideoReader",
+          "lines_changed": [
+            "Línea 17: Remover 'import cv2'",
+            "Línea 30: Agregar 'from ..utils.video_reader import VideoReader, OpenCVVideoReader'",
+            "Línea 263: Reemplazar 'cap = cv2.VideoCapture()' con 'video_reader = OpenCVVideoReader()'",
+            "Línea 268-271: Reemplazar 'cap.get(cv2.CAP_PROP_*)' con métodos de video_reader",
+            "Línea 302: Reemplazar 'while cap.isOpened()' con 'while video_reader.is_opened()'",
+            "Línea 303: Reemplazar 'ret, frame = cap.read()' con 'ret, frame = video_reader.read_frame()'",
+            "Línea 353: Reemplazar 'cap.release()' con 'video_reader.close()'"
+          ]
+        },
+        {
+          "file": "pipeline/frame_processor.py",
+          "type": "MODIFY",
+          "description": "Usar ColorSpaceConverter en lugar de cv2.cvtColor",
+          "lines_changed": [
+            "Línea 16: Remover 'import cv2'",
+            "Línea 24: Agregar 'from ..utils.video_reader import ColorSpaceConverter'",
+            "Línea 152: Agregar 'self.color_converter = ColorSpaceConverter(logger=self.logger)'",
+            "Línea 513: Reemplazar 'cv2.cvtColor()' con 'self.color_converter.bgr_to_hsv()'"
+          ]
+        },
+        {
+          "file": "utils/video_splitter.py",
+          "type": "MODIFY",
+          "description": "Reemplazar cv2.VideoCapture/VideoWriter con abstracciones",
+          "lines_changed": [
+            "Línea 14: Remover 'import cv2'",
+            "Línea 22: Agregar imports de video_reader",
+            "Línea 85: Reemplazar uso de cv2.VideoCapture con OpenCVVideoReader",
+            "Línea 122: Reemplazar uso de cv2.VideoCapture con OpenCVVideoReader",
+            "Línea 176: Reemplazar parámetro 'cap' con 'video_reader'",
+            "Línea 190-195: Reemplazar cv2.VideoWriter con OpenCVVideoWriter",
+            "Línea 248: Reemplazar cv2.VideoCapture con OpenCVVideoReader"
+          ]
+        },
+        {
+          "file": "utils/validators.py",
+          "type": "MODIFY",
+          "description": "Reemplazar cv2.VideoCapture con OpenCVVideoReader",
+          "lines_changed": [
+            "Línea 16: Remover 'import cv2'",
+            "Línea 23: Agregar 'from .video_reader import OpenCVVideoReader'",
+            "Línea 110: Reemplazar 'cap = cv2.VideoCapture()' con 'video_reader = OpenCVVideoReader()'",
+            "Línea 123-126: Reemplazar 'cap.get(cv2.CAP_PROP_*)' con métodos de video_reader",
+            "Línea 164-165: Reemplazar 'cap.set()' y 'cap.read()' con métodos de video_reader",
+            "Línea 172: Reemplazar 'cap.release()' con 'video_reader.close()'"
+          ]
+        }
+      ]
+    },
+    {
+      "blocker_id": 4,
+      "title": "logging.basicConfig() contamina global",
+      "description": "En video_splitter.py y validators.py",
+      "solution": "Remover basicConfig(), usar getLogger() solo. Parent logger maneja config global",
+      "files_modified": [
+        "utils/video_splitter.py",
+        "utils/validators.py"
+      ],
+      "changes": [
+        {
+          "file": "utils/video_splitter.py",
+          "type": "MODIFY",
+          "description": "Remover logging.basicConfig()",
+          "lines_changed": [
+            "Línea 25: Reemplazar 'logging.basicConfig(level=logging.INFO)' con comentario",
+            "Línea 26: Mantener 'logger = logging.getLogger(__name__)'"
+          ]
+        },
+        {
+          "file": "utils/validators.py",
+          "type": "MODIFY",
+          "description": "Remover logging.basicConfig()",
+          "lines_changed": [
+            "Línea 26: Reemplazar 'logging.basicConfig(level=logging.INFO)' con comentario",
+            "Línea 27: Mantener 'logger = logging.getLogger(__name__)'"
+          ]
+        }
+      ]
+    },
+    {
+      "blocker_id": 5,
+      "title": "VALID_CLASSES hardcoded",
+      "description": "En frame_processor.py línea ~95",
+      "solution": "Hacer configurable: agregar parámetro al constructor de FrameProcessor",
+      "files_modified": [
+        "pipeline/frame_processor.py"
+      ],
+      "changes": [
+        {
+          "file": "pipeline/frame_processor.py",
+          "type": "MODIFY",
+          "description": "Hacer VALID_CLASSES configurable",
+          "lines_changed": [
+            "Línea 108: Renombrar 'VALID_CLASSES' a 'DEFAULT_VALID_CLASSES'",
+            "Línea 118: Agregar parámetro 'valid_classes: Optional[Dict[int, str]] = None' al constructor",
+            "Línea 145: Agregar 'self.valid_classes = valid_classes or self.DEFAULT_VALID_CLASSES'",
+            "Línea 382: Reemplazar 'self.VALID_CLASSES' con 'self.valid_classes'"
+          ]
+        }
+      ]
+    }
+  ],
+  "new_files_created": [
+    {
+      "path": "utils/video_reader.py",
+      "type": "Python Module",
+      "size_lines": 370,
+      "components": [
+        {
+          "name": "VideoReader",
+          "type": "Abstract Base Class",
+          "methods": [
+            "open(path: str) -> bool",
+            "read_frame() -> Tuple[bool, Optional[np.ndarray]]",
+            "set_frame_position(frame_number: int) -> bool",
+            "get_fps() -> float",
+            "get_frame_count() -> int",
+            "get_resolution() -> Tuple[int, int]",
+            "close() -> None",
+            "is_opened() -> bool"
+          ]
+        },
+        {
+          "name": "OpenCVVideoReader",
+          "type": "Concrete Implementation",
+          "description": "Implementación usando OpenCV cv2.VideoCapture"
+        },
+        {
+          "name": "ColorSpaceConverter",
+          "type": "Concrete Class",
+          "methods": [
+            "bgr_to_hsv(bgr_image: np.ndarray) -> np.ndarray",
+            "bgr_to_rgb(bgr_image: np.ndarray) -> np.ndarray",
+            "bgr_to_gray(bgr_image: np.ndarray) -> np.ndarray"
+          ]
+        },
+        {
+          "name": "VideoWriter",
+          "type": "Abstract Base Class",
+          "methods": [
+            "open(path: str, fourcc: str, fps: float, frame_size: tuple) -> bool",
+            "write_frame(frame: np.ndarray) -> bool",
+            "close() -> None",
+            "is_opened() -> bool"
+          ]
+        },
+        {
+          "name": "OpenCVVideoWriter",
+          "type": "Concrete Implementation",
+          "description": "Implementación usando OpenCV cv2.VideoWriter"
+        }
+      ]
+    }
+  ],
+  "benefits": [
+    {
+      "benefit": "Abstracción de OpenCV",
+      "description": "Permite mockear VideoReader/VideoWriter en tests sin depender de archivos reales"
+    },
+    {
+      "benefit": "Logging limpio",
+      "description": "Cada módulo usa su propio logger sin contaminar la configuración global"
+    },
+    {
+      "benefit": "Configurabilidad",
+      "description": "VALID_CLASSES ahora es parametrizable, permitiendo diferentes modelos YOLO"
+    },
+    {
+      "benefit": "Mantenibilidad",
+      "description": "Si en futuro se cambia de OpenCV a otra librería, solo hay que cambiar las implementaciones"
+    },
+    {
+      "benefit": "Testabilidad",
+      "description": "Las abstracciones permiten crear mocks para testing sin efectos secundarios"
+    }
+  ],
+  "testing_recommendations": [
+    {
+      "test_type": "Unit Tests",
+      "description": "Crear tests para VideoReader con mock frames",
+      "files_to_test": [
+        "utils/video_reader.py",
+        "pipeline/frame_processor.py (parámetro valid_classes)",
+        "pipeline/video_processor.py (uso de VideoReader)"
+      ]
+    },
+    {
+      "test_type": "Integration Tests",
+      "description": "Verificar pipeline completo con videos reales",
+      "files_to_test": [
+        "utils/video_splitter.py",
+        "utils/validators.py",
+        "pipeline/video_processor.py"
+      ]
+    },
+    {
+      "test_type": "Configuration Tests",
+      "description": "Probar FrameProcessor con diferentes VALID_CLASSES",
+      "example": "frame_processor = FrameProcessor(..., valid_classes={0: 'person', 1: 'ball'})"
+    }
+  ],
+  "backward_compatibility": {
+    "status": "MAINTAINED",
+    "notes": [
+      "VideoReader.open() reemplaza cv2.VideoCapture() pero con API similar",
+      "FrameProcessor(valid_classes=None) usa DEFAULT_VALID_CLASSES como antes",
+      "Logging funciona igual pero sin contaminar global",
+      "Código cliente puede opcionalmente inyectar sus propias implementaciones de VideoReader"
+    ]
+  },
+  "files_summary": {
+    "total_files_modified": 5,
+    "total_files_created": 1,
+    "total_lines_added": 370,
+    "total_lines_removed": 15
+  }
+}

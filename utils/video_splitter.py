@@ -11,7 +11,6 @@ Características:
 - Validación de integridad entre chunks
 """
 
-import cv2
 import os
 import numpy as np
 from pathlib import Path
@@ -19,10 +18,11 @@ from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass, asdict
 import json
 import logging
+from .video_reader import OpenCVVideoReader, OpenCVVideoWriter
 
 
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
+# Configuración de logging - usar solo getLogger()
+# logging.basicConfig() se configura en el logger raíz del core
 logger = logging.getLogger(__name__)
 
 
@@ -83,23 +83,26 @@ class VideoSplitter:
         self._extract_video_info()
 
     def _extract_video_info(self) -> None:
-        """Extrae información del video usando OpenCV"""
-        cap = cv2.VideoCapture(self.video_path)
+        """Extrae información del video usando VideoReader"""
+        video_reader = OpenCVVideoReader(logger=logger)
 
-        if not cap.isOpened():
+        if not video_reader.open(self.video_path):
             raise ValueError(f"No se puede abrir el video: {self.video_path}")
 
+        width, height = video_reader.get_resolution()
+        total_frames = video_reader.get_frame_count()
+        fps = video_reader.get_fps()
+
         self.video_info = {
-            'total_frames': int(cap.get(cv2.CAP_PROP_FRAME_COUNT)),
-            'fps': cap.get(cv2.CAP_PROP_FPS),
-            'width': int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
-            'height': int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),
-            'duration_seconds': int(cap.get(cv2.CAP_PROP_FRAME_COUNT) /
-                                   cap.get(cv2.CAP_PROP_FPS)),
+            'total_frames': total_frames,
+            'fps': fps,
+            'width': width,
+            'height': height,
+            'duration_seconds': int(total_frames / fps) if fps > 0 else 0,
             'file_size_mb': os.path.getsize(self.video_path) / (1024 * 1024),
         }
 
-        cap.release()
+        video_reader.close()
         logger.info(f"Video info: {self.video_info}")
 
     def split_video(self, chunk_duration: int = 30,
@@ -119,7 +122,10 @@ class VideoSplitter:
             >>> chunks = splitter.split_video(chunk_duration=30)
             >>> print(f"Created {len(chunks)} chunks")
         """
-        cap = cv2.VideoCapture(self.video_path)
+        video_reader = OpenCVVideoReader(logger=logger)
+        if not video_reader.open(self.video_path):
+            raise RuntimeError(f"No se pudo abrir el video: {self.video_path}")
+
         fps = self.video_info['fps']
         frames_per_chunk = int(chunk_duration * fps)
         total_frames = self.video_info['total_frames']
@@ -142,7 +148,7 @@ class VideoSplitter:
             chunk_filepath = str(self.output_dir / chunk_filename)
 
             # Extraer y guardar chunk
-            self._extract_chunk(cap, start_frame, end_frame, chunk_filepath)
+            self._extract_chunk(video_reader, start_frame, end_frame, chunk_filepath)
 
             # Calcular tamaño del archivo
             chunk_size_mb = os.path.getsize(chunk_filepath) / (1024 * 1024)
@@ -168,42 +174,45 @@ class VideoSplitter:
             chunk_id += 1
             current_frame = end_frame
 
-        cap.release()
+        video_reader.close()
         self._save_chunk_metadata()
 
         return self.chunks
 
-    def _extract_chunk(self, cap: cv2.VideoCapture,
+    def _extract_chunk(self, video_reader: OpenCVVideoReader,
                       start_frame: int, end_frame: int,
                       output_path: str) -> None:
         """
         Extrae un rango de frames y lo guarda como video.
 
         Args:
-            cap: VideoCapture abierto
+            video_reader: VideoReader abierto
             start_frame: Frame inicial
             end_frame: Frame final
             output_path: Ruta de salida
         """
         # Configurar escritor de video
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(
+        writer = OpenCVVideoWriter(logger=logger)
+        if not writer.open(
             output_path,
-            fourcc,
+            'mp4v',
             self.video_info['fps'],
             (self.video_info['width'], self.video_info['height'])
-        )
+        ):
+            logger.error(f"No se pudo crear archivo de chunk: {output_path}")
+            return
+
+        # Posicionar en start_frame
+        video_reader.set_frame_position(start_frame)
 
         # Leer y escribir frames
-        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-
         for frame_id in range(start_frame, end_frame):
-            ret, frame = cap.read()
+            ret, frame = video_reader.read_frame()
             if not ret:
                 break
-            writer.write(frame)
+            writer.write_frame(frame)
 
-        writer.release()
+        writer.close()
 
     def merge_chunks(self, chunks: Optional[List[ChunkInfo]] = None,
                     output_path: Optional[str] = None) -> str:
@@ -236,28 +245,33 @@ class VideoSplitter:
         chunks_sorted = sorted(chunks, key=lambda x: x.start_frame)
 
         # Configurar escritor de video
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        writer = cv2.VideoWriter(
+        writer = OpenCVVideoWriter(logger=logger)
+        if not writer.open(
             output_path,
-            fourcc,
+            'mp4v',
             chunks_sorted[0].fps,
             (chunks_sorted[0].width, chunks_sorted[0].height)
-        )
+        ):
+            logger.error(f"No se pudo crear video fusionado: {output_path}")
+            return output_path
 
         # Fusionar chunks
         for chunk_info in chunks_sorted:
-            cap = cv2.VideoCapture(chunk_info.file_path)
+            video_reader = OpenCVVideoReader(logger=logger)
+            if not video_reader.open(chunk_info.file_path):
+                logger.warning(f"No se pudo abrir chunk: {chunk_info.file_path}")
+                continue
 
             while True:
-                ret, frame = cap.read()
+                ret, frame = video_reader.read_frame()
                 if not ret:
                     break
-                writer.write(frame)
+                writer.write_frame(frame)
 
-            cap.release()
+            video_reader.close()
             logger.info(f"Merged chunk {chunk_info.chunk_id}")
 
-        writer.release()
+        writer.close()
         logger.info(f"Merged video saved: {output_path}")
 
         return output_path

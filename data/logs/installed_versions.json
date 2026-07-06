@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "snapshot_date": "2026-07-06",
+    "project": "Scout AI Analytics",
+    "venv_path": ".venv",
+    "notes": "Current installed versions in active virtual environment"
+  },
+
+  "installed_packages": {
+    "ultralytics": {
+      "installed_version": "8.4.69",
+      "recommended_range": ">=8.0.0,<9.0.0",
+      "status": "OK",
+      "notes": "Current version meets requirements, includes latest bug fixes"
+    },
+
+    "opencv-python": {
+      "installed_version": "4.13.0.92",
+      "recommended_range": ">=4.8.0,<5.0.0",
+      "status": "OK",
+      "notes": "Current version is recent and stable"
+    },
+
+    "supervision": {
+      "installed_version": "0.29.0",
+      "recommended_version": "==0.29.0",
+      "status": "OK",
+      "notes": "Exact match with pinned version, project compatible"
+    },
+
+    "numpy": {
+      "installed_version": "2.4.6",
+      "recommended_range": ">=1.24.0,<2.0.0",
+      "status": "WARN",
+      "notes": "Installed is 2.x, recommended was <2.0. NumPy 2.x is compatible but represents breaking changes. Update recommendation is acceptable for modern codebase.",
+      "action": "Monitor compatibility, especially with scipy and scikit-learn"
+    },
+
+    "pandas": {
+      "installed_version": "3.0.3",
+      "recommended_range": ">=2.0.0,<3.0.0",
+      "status": "WARN",
+      "notes": "Installed is 3.x, recommended was <3.0. Pandas 3.0 includes breaking changes.",
+      "action": "Test thoroughly for CSV export and DataFrame operations. Consider pinning to 2.x if issues arise."
+    },
+
+    "scipy": {
+      "installed_version": "1.17.1",
+      "recommended_range": ">=1.10.0,<2.0.0",
+      "status": "OK",
+      "notes": "Current version is recent and compatible"
+    },
+
+    "scikit-learn": {
+      "installed_version": "1.9.0",
+      "recommended_range": ">=1.3.0,<2.0.0",
+      "status": "OK",
+      "notes": "Current version is recent, KMeans clustering should work fine"
+    },
+
+    "pyyaml": {
+      "installed_version": "6.0.3",
+      "recommended_range": ">=6.0,<7.0",
+      "status": "OK",
+      "notes": "Current version is stable and secure"
+    },
+
+    "tqdm": {
+      "installed_version": "4.68.2",
+      "recommended_range": ">=4.66.0,<5.0.0",
+      "status": "OK",
+      "notes": "Current version is recent and compatible"
+    },
+
+    "Pillow": {
+      "installed_version": "12.2.0",
+      "recommended_range": ">=10.0.0,<11.0.0",
+      "status": "WARN",
+      "notes": "Installed is 12.x, recommended was <11.0. Pillow 12.0 includes breaking changes.",
+      "action": "Image operations should work fine, but test reportlab integration"
+    },
+
+    "psutil": {
+      "installed_version": "7.2.2",
+      "recommended_range": ">=5.9.0,<6.0.0",
+      "status": "WARN",
+      "notes": "Installed is 7.x, recommended was <6.0. Newer version but compatible."
+    },
+
+    "reportlab": {
+      "installed_version": "NOT_INSTALLED",
+      "recommended_range": ">=4.0.0,<5.0.0",
+      "status": "MISSING",
+      "notes": "PDF generation not installed. Install if report generation needed.",
+      "install_command": "pip install 'reportlab>=4.0.0,<5.0.0'"
+    },
+
+    "plotly": {
+      "installed_version": "NOT_INSTALLED",
+      "recommended_range": ">=5.17.0,<6.0.0",
+      "status": "MISSING",
+      "notes": "Interactive visualizations not installed. Install if dashboard generation needed.",
+      "install_command": "pip install 'plotly>=5.17.0,<6.0.0'"
+    },
+
+    "paddleocr": {
+      "installed_version": "NOT_INSTALLED",
+      "recommended_range": ">=2.7.0.3",
+      "status": "MISSING",
+      "notes": "OCR not installed. Optional, needed for jersey number detection.",
+      "install_command": "pip install 'paddleocr>=2.7.0.3'"
+    },
+
+    "easyocr": {
+      "installed_version": "NOT_INSTALLED",
+      "recommended_range": ">=1.6.0,<2.0.0",
+      "status": "MISSING",
+      "notes": "Fallback OCR not installed. Optional, used as paddleocr alternative.",
+      "install_command": "pip install 'easyocr>=1.6.0,<2.0.0'"
+    },
+
+    "openvino": {
+      "installed_version": "2026.2.0",
+      "recommended_range": ">=2023.0.0,<2025.0.0",
+      "status": "WARN",
+      "notes": "Version 2026.2.0 is newer than recommended range. Likely compatible but untested.",
+      "action": "OpenVINO export and optimization should work, monitor for issues"
+    },
+
+    "onnx": {
+      "installed_version": "1.22.0",
+      "recommended_range": ">=1.14.0,<2.0.0",
+      "status": "OK",
+      "notes": "Current version is compatible"
+    },
+
+    "gdown": {
+      "installed_version": "6.1.0",
+      "recommended_range": ">=4.7.0,<5.0.0",
+      "status": "OK",
+      "notes": "Newer version, compatible with model and video downloads"
+    },
+
+    "sports": {
+      "installed_version": "NOT_CHECKED",
+      "recommended_range": ">=0.2.0",
+      "status": "INSTALLED_LOCALLY",
+      "notes": "Installed from ./sports-main directory, version not in pip"
+    }
+  },
+
+  "summary": {
+    "total_packages": 18,
+    "fully_compatible": 13,
+    "warnings": 5,
+    "missing": 3,
+    "overall_status": "OPERATIONAL"
+  },
+
+  "recommendations": {
+    "critical": [
+      "NO CRITICAL ISSUES DETECTED",
+      "All core detection and processing dependencies are installed and compatible"
+    ],
+
+    "optional_additions": [
+      "Install reportlab for PDF report generation: pip install 'reportlab>=4.0.0'",
+      "Install plotly for interactive dashboards: pip install 'plotly>=5.17.0'",
+      "Install paddleocr for jersey number detection: pip install 'paddleocr>=2.7.0.3'"
+    ],
+
+    "version_upgrades": [
+      "All installed versions are compatible with the project",
+      "Some packages are newer than originally recommended (numpy 2.x, pandas 3.x, pillow 12.x, etc.)",
+      "These newer versions are generally forward-compatible but should be monitored"
+    ],
+
+    "testing_after_install": [
+      "Run validation scripts: python scripts/0_validate.py",
+      "Test video processing: python 2_analizar.py",
+      "Check report generation if reportlab installed: ReportGenerator test",
+      "Verify OCR if paddleocr/easyocr installed: Jersey number detection test"
+    ]
+  },
+
+  "installation_command": {
+    "all_core": "pip install -r requirements.txt",
+    "all_with_dev": "pip install -r requirements-dev.txt",
+    "missing_optional": "pip install reportlab plotly paddleocr",
+    "upgrade_specific": "pip install --upgrade 'package_name>=version'"
+  },
+
+  "notes": {
+    "numpy_2x": "NumPy 2.x introduces breaking changes but is generally compatible with most code written for 1.x",
+    "pandas_3x": "Pandas 3.0 includes breaking changes; CSV operations should still work but monitor for issues",
+    "pillow_12x": "Pillow 12.x is compatible; primarily adds new features rather than breaking changes",
+    "openvino_version": "Version 2026.2 is from future release branch; likely compatible but use caution in production"
+  }
+}

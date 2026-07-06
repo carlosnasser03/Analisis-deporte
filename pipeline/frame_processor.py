@@ -13,13 +13,14 @@ Date: 2026-07-06
 """
 
 import numpy as np
-import cv2
 import logging
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, asdict, field
 from enum import Enum
 import traceback
 from datetime import datetime
+
+from ..utils.video_reader import ColorSpaceConverter
 
 
 class DetectionQuality(Enum):
@@ -104,8 +105,8 @@ class FrameProcessor:
     MIN_DETECTION_SIZE = 10  # píxeles
     MAX_DETECTION_SIZE = 2000  # píxeles
 
-    # Clases de objetos esperadas
-    VALID_CLASSES = {
+    # Clases de objetos esperadas (por defecto)
+    DEFAULT_VALID_CLASSES = {
         0: 'player',
         1: 'ball',
         2: 'referee',
@@ -119,6 +120,7 @@ class FrameProcessor:
         team_classifier=None,
         analyzer=None,
         min_confidence: float = MIN_CONFIDENCE,
+        valid_classes: Optional[Dict[int, str]] = None,
         logger: Optional[logging.Logger] = None
     ):
         """
@@ -130,6 +132,8 @@ class FrameProcessor:
             team_classifier: Instancia de clasificador de equipos
             analyzer: Instancia de analizador de características
             min_confidence (float): Confianza mínima para detecciones
+            valid_classes (Optional[Dict[int, str]]): Mapeo de class_id a class_name válidas.
+                Si es None, usa DEFAULT_VALID_CLASSES
             logger (Optional[logging.Logger]): Logger personalizado
 
         Raises:
@@ -141,9 +145,13 @@ class FrameProcessor:
         self.analyzer = analyzer
 
         self.min_confidence = min_confidence
+        self.valid_classes = valid_classes or self.DEFAULT_VALID_CLASSES
 
         # Configurar logger
         self.logger = logger or self._setup_logger()
+
+        # Inicializar convertidor de espacios de color
+        self.color_converter = ColorSpaceConverter(logger=self.logger)
 
         # Estadísticas de procesamiento
         self.stats = {
@@ -379,7 +387,7 @@ class FrameProcessor:
                 errors.append("Fuera de límites del frame")
 
             # Validar clase
-            if det.class_id not in self.VALID_CLASSES:
+            if det.class_id not in self.valid_classes:
                 errors.append(f"Clase inválida: {det.class_id}")
 
             # Si pasó todas las validaciones
@@ -510,7 +518,7 @@ class FrameProcessor:
                         features['color_mean'] = roi.mean(axis=(0, 1)).tolist()
 
                         # Histograma HSV
-                        hsv_roi = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+                        hsv_roi = self.color_converter.bgr_to_hsv(roi)
                         features['hsv_hist'] = {
                             'h': float(hsv_roi[:, :, 0].mean()),
                             's': float(hsv_roi[:, :, 1].mean()),

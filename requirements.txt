@@ -1,0 +1,117 @@
+# Scout AI Analytics - Football/Soccer Analysis System
+# Production Dependencies
+# =============================================================================
+#
+# VISION & DETECTION
+# =============================================================================
+
+# YOLO Object Detection Framework
+# Used for: Player detection, ball detection, pitch detection
+# Version: 8.0+ provides significant improvements over 7.x
+ultralytics>=8.0.0,<9.0.0
+
+# Computer Vision Processing
+# Used for: Frame processing, image transformations, video I/O
+opencv-python>=4.8.0,<5.0.0
+
+# Supervision: Detection filtering, tracking, annotation tools
+# Used for: ByteTrack, detection utilities, video frame processing
+# Pinned to 0.29.0 for stability based on project config
+supervision==0.29.0
+
+# =============================================================================
+# DATA SCIENCE & NUMERICAL COMPUTING
+# =============================================================================
+
+# NumPy: Numerical arrays and mathematical operations
+# Used for: Array operations, coordinate transformations, statistics
+numpy>=1.24.0,<2.0.0
+
+# Pandas: Data structures and analysis
+# Used for: DataFrame creation, CSV export, statistical operations
+pandas>=2.0.0,<3.0.0
+
+# SciPy: Scientific computing
+# Used for: Homography transformation, distance calculations
+scipy>=1.10.0,<2.0.0
+
+# Scikit-Learn: Machine Learning
+# Used for: KMeans clustering (team classification), metrics
+scikit-learn>=1.3.0,<2.0.0
+
+# =============================================================================
+# COMPUTER VISION MODELS & TRACKING
+# =============================================================================
+
+# Roboflow Sports Library
+# Used for: Soccer pitch configuration, view transformation, annotators
+# Install from: https://github.com/roboflow/sports
+# Note: Install via pip install ./sports-main (from extracted repo)
+sports>=0.2.0
+
+# =============================================================================
+# OCR (Optical Character Recognition)
+# =============================================================================
+
+# PaddleOCR: High-performance OCR engine (primary)
+# Used for: Jersey number detection and recognition
+paddleocr>=2.7.0.3
+
+# EasyOCR: Fallback OCR solution
+# Used for: Jersey number detection (fallback if paddleocr fails)
+easyocr>=1.6.0,<2.0.0
+
+# =============================================================================
+# CONFIGURATION & UTILITIES
+# =============================================================================
+
+# PyYAML: YAML configuration file parsing
+# Used for: Loading detection_config.yaml
+pyyaml>=6.0,<7.0
+
+# tqdm: Progress bars
+# Used for: Frame processing progress visualization
+tqdm>=4.66.0,<5.0.0
+
+# Pillow: Image processing
+# Used for: Image manipulation, format conversion
+Pillow>=10.0.0,<11.0.0
+
+# psutil: System utilities
+# Used for: System monitoring, resource checks
+psutil>=5.9.0,<6.0.0
+
+# =============================================================================
+# REPORT GENERATION & VISUALIZATION
+# =============================================================================
+
+# ReportLab: PDF generation
+# Used for: Creating professional PDF reports with graphics and tables
+reportlab>=4.0.0,<5.0.0
+
+# Plotly: Interactive visualizations
+# Used for: Creating interactive charts and dashboards for reports
+plotly>=5.17.0,<6.0.0
+
+# =============================================================================
+# INFERENCE OPTIMIZATION (Optional)
+# =============================================================================
+
+# OpenVINO: Intel's inference optimization toolkit
+# Used for: Model optimization and export to OpenVINO format
+# Optional but recommended for CPU/iGPU performance
+openvino>=2023.0.0,<2025.0.0
+
+# ONNX: Open Neural Network Exchange
+# Used for: Model format compatibility and export
+onnx>=1.14.0,<2.0.0
+
+# Google Drive downloader
+# Used for: Downloading models and test videos from Google Drive
+gdown>=4.7.0,<5.0.0
+
+# =============================================================================
+# PYTHON VERSION
+# =============================================================================
+# Requires: Python 3.8+
+# Tested on: Python 3.9, 3.10, 3.11

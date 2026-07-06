@@ -13,17 +13,17 @@ Características:
 """
 
 import os
-import cv2
 import json
 import yaml
 import logging
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass
+from .video_reader import OpenCVVideoReader
 
 
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
+# Configuración de logging - usar solo getLogger()
+# logging.basicConfig() se configura en el logger raíz del core
 logger = logging.getLogger(__name__)
 
 
@@ -107,9 +107,9 @@ class VideoValidator:
             warnings.append("El archivo es muy grande (> 5 GB)")
 
         # 5. Validar contenido del video
-        cap = cv2.VideoCapture(video_path)
+        video_reader = OpenCVVideoReader(logger=logger)
 
-        if not cap.isOpened():
+        if not video_reader.open(video_path):
             errors.append(f"No se puede abrir el video con OpenCV")
             return ValidationResult(
                 is_valid=False,
@@ -120,10 +120,9 @@ class VideoValidator:
             )
 
         # 6. Extraer propiedades del video
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        fps = cap.get(cv2.CAP_PROP_FPS)
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        total_frames = video_reader.get_frame_count()
+        fps = video_reader.get_fps()
+        width, height = video_reader.get_resolution()
         duration_seconds = total_frames / fps if fps > 0 else 0
 
         details.update({
@@ -161,15 +160,16 @@ class VideoValidator:
         # 11. Intentar leer algunos frames
         frame_read_errors = 0
         for i in range(min(10, total_frames)):
-            cap.set(cv2.CAP_PROP_POS_FRAMES, i * (total_frames // 10))
-            ret, frame = cap.read()
+            target_frame = i * (total_frames // 10) if total_frames > 10 else i
+            video_reader.set_frame_position(target_frame)
+            ret, frame = video_reader.read_frame()
             if not ret or frame is None:
                 frame_read_errors += 1
 
         if frame_read_errors > 3:
             errors.append(f"Errores al leer frames: {frame_read_errors}/10")
 
-        cap.release()
+        video_reader.close()
 
         # Resultado final
         is_valid = len(errors) == 0

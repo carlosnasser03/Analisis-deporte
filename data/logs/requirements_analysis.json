@@ -1,0 +1,415 @@
+{
+  "metadata": {
+    "analysis_date": "2026-07-06",
+    "project": "Scout AI Analytics - Football/Soccer Analysis System",
+    "python_version": "3.8+",
+    "tested_on": ["3.9", "3.10", "3.11"],
+    "analysis_type": "Dependency Analysis and Compatibility Check",
+    "created_by": "Scout AI Dependency Analysis Tool"
+  },
+
+  "production_dependencies": {
+    "ultralytics": {
+      "version": ">=8.0.0,<9.0.0",
+      "category": "Vision & Detection",
+      "purpose": "YOLO Object Detection Framework",
+      "usage": "Player detection, ball detection, pitch detection",
+      "required": true,
+      "notes": "Version 8.0+ provides significant improvements over 7.x, better batch processing, improved inference speed",
+      "install_command": "pip install 'ultralytics>=8.0.0,<9.0.0'"
+    },
+
+    "opencv-python": {
+      "version": ">=4.8.0,<5.0.0",
+      "category": "Vision & Detection",
+      "purpose": "Computer Vision Processing",
+      "usage": "Frame processing, image transformations, video I/O",
+      "required": true,
+      "notes": "4.8.0+ provides better performance and stability",
+      "install_command": "pip install 'opencv-python>=4.8.0,<5.0.0'"
+    },
+
+    "supervision": {
+      "version": "==0.29.0",
+      "category": "Vision & Detection",
+      "purpose": "Detection filtering, tracking, annotation tools",
+      "usage": "ByteTrack integration, detection utilities, video frame processing",
+      "required": true,
+      "notes": "Pinned to exact version 0.29.0 for stability as specified in 1_preparar.py",
+      "pinned_reason": "Project explicitly pins this version, API compatibility critical",
+      "install_command": "pip install 'supervision==0.29.0'"
+    },
+
+    "numpy": {
+      "version": ">=1.24.0,<2.0.0",
+      "category": "Data Science & Numerical Computing",
+      "purpose": "Numerical arrays and mathematical operations",
+      "usage": "Array operations, coordinate transformations, statistics",
+      "required": true,
+      "notes": "1.24.0+ drops support for Python 3.7, compatible with 3.8+",
+      "install_command": "pip install 'numpy>=1.24.0,<2.0.0'"
+    },
+
+    "pandas": {
+      "version": ">=2.0.0,<3.0.0",
+      "category": "Data Science & Numerical Computing",
+      "purpose": "Data structures and analysis",
+      "usage": "DataFrame creation, CSV export, statistical operations",
+      "required": true,
+      "notes": "2.0.0+ includes performance improvements and better type support",
+      "install_command": "pip install 'pandas>=2.0.0,<3.0.0'"
+    },
+
+    "scipy": {
+      "version": ">=1.10.0,<2.0.0",
+      "category": "Data Science & Numerical Computing",
+      "purpose": "Scientific computing",
+      "usage": "Homography transformation, distance calculations",
+      "required": true,
+      "notes": "1.10.0+ improved stability and performance",
+      "install_command": "pip install 'scipy>=1.10.0,<2.0.0'"
+    },
+
+    "scikit-learn": {
+      "version": ">=1.3.0,<2.0.0",
+      "category": "Data Science & Numerical Computing",
+      "purpose": "Machine Learning",
+      "usage": "KMeans clustering for team classification, metrics calculation",
+      "required": true,
+      "notes": "1.3.0+ includes optimization improvements",
+      "install_command": "pip install 'scikit-learn>=1.3.0,<2.0.0'"
+    },
+
+    "sports": {
+      "version": ">=0.2.0",
+      "category": "Computer Vision Models & Tracking",
+      "purpose": "Roboflow Sports Library",
+      "usage": "Soccer pitch configuration, view transformation, annotators",
+      "required": true,
+      "notes": "Install from GitHub: https://github.com/roboflow/sports",
+      "install_command": "pip install ./sports-main (after downloading from repo)",
+      "alternate_install": "Installed via 1_preparar.py from GitHub archive"
+    },
+
+    "paddleocr": {
+      "version": ">=2.7.0.3",
+      "category": "OCR",
+      "purpose": "High-performance OCR engine (primary)",
+      "usage": "Jersey number detection and recognition",
+      "required": false,
+      "notes": "Primary OCR engine, best performance for jersey numbers",
+      "install_command": "pip install 'paddleocr>=2.7.0.3'"
+    },
+
+    "easyocr": {
+      "version": ">=1.6.0,<2.0.0",
+      "category": "OCR",
+      "purpose": "Fallback OCR solution",
+      "usage": "Jersey number detection (fallback if paddleocr fails)",
+      "required": false,
+      "notes": "Lighter alternative, used as fallback if paddleocr unavailable",
+      "install_command": "pip install 'easyocr>=1.6.0,<2.0.0'"
+    },
+
+    "pyyaml": {
+      "version": ">=6.0,<7.0",
+      "category": "Configuration & Utilities",
+      "purpose": "YAML configuration file parsing",
+      "usage": "Loading detection_config.yaml",
+      "required": true,
+      "notes": "6.0+ includes security improvements",
+      "install_command": "pip install 'pyyaml>=6.0,<7.0'"
+    },
+
+    "tqdm": {
+      "version": ">=4.66.0,<5.0.0",
+      "category": "Configuration & Utilities",
+      "purpose": "Progress bars",
+      "usage": "Frame processing progress visualization",
+      "required": false,
+      "notes": "Improves user experience with progress tracking",
+      "install_command": "pip install 'tqdm>=4.66.0,<5.0.0'"
+    },
+
+    "Pillow": {
+      "version": ">=10.0.0,<11.0.0",
+      "category": "Configuration & Utilities",
+      "purpose": "Image processing",
+      "usage": "Image manipulation, format conversion",
+      "required": false,
+      "notes": "10.0.0+ includes performance improvements",
+      "install_command": "pip install 'Pillow>=10.0.0,<11.0.0'"
+    },
+
+    "psutil": {
+      "version": ">=5.9.0,<6.0.0",
+      "category": "Configuration & Utilities",
+      "purpose": "System utilities",
+      "usage": "System monitoring, resource checks",
+      "required": false,
+      "notes": "Helps monitor system resources during processing",
+      "install_command": "pip install 'psutil>=5.9.0,<6.0.0'"
+    },
+
+    "reportlab": {
+      "version": ">=4.0.0,<5.0.0",
+      "category": "Report Generation & Visualization",
+      "purpose": "PDF generation",
+      "usage": "Creating professional PDF reports with graphics and tables",
+      "required": false,
+      "notes": "4.0.0+ includes improved font handling and performance",
+      "install_command": "pip install 'reportlab>=4.0.0,<5.0.0'"
+    },
+
+    "plotly": {
+      "version": ">=5.17.0,<6.0.0",
+      "category": "Report Generation & Visualization",
+      "purpose": "Interactive visualizations",
+      "usage": "Creating interactive charts and dashboards for reports",
+      "required": false,
+      "notes": "5.17.0+ includes new features and performance improvements",
+      "install_command": "pip install 'plotly>=5.17.0,<6.0.0'"
+    },
+
+    "openvino": {
+      "version": ">=2023.0.0,<2025.0.0",
+      "category": "Inference Optimization",
+      "purpose": "Intel's inference optimization toolkit",
+      "usage": "Model optimization and export to OpenVINO format",
+      "required": false,
+      "notes": "Optional but recommended for CPU/iGPU/NPU performance",
+      "install_command": "pip install 'openvino>=2023.0.0,<2025.0.0'",
+      "system_requirements": "Intel processor (optional, enhances performance)"
+    },
+
+    "onnx": {
+      "version": ">=1.14.0,<2.0.0",
+      "category": "Inference Optimization",
+      "purpose": "Open Neural Network Exchange format",
+      "usage": "Model format compatibility and export",
+      "required": false,
+      "notes": "1.14.0+ improved stability",
+      "install_command": "pip install 'onnx>=1.14.0,<2.0.0'"
+    },
+
+    "gdown": {
+      "version": ">=4.7.0,<5.0.0",
+      "category": "Inference Optimization",
+      "purpose": "Google Drive downloader",
+      "usage": "Downloading models and test videos from Google Drive",
+      "required": false,
+      "notes": "Used in 1_preparar.py for model and video downloads",
+      "install_command": "pip install 'gdown>=4.7.0,<5.0.0'"
+    }
+  },
+
+  "development_dependencies": {
+    "pytest": {
+      "version": ">=7.4.0,<8.0.0",
+      "purpose": "Testing framework",
+      "usage": "Unit tests, integration tests, test discovery",
+      "install_command": "pip install 'pytest>=7.4.0,<8.0.0'"
+    },
+
+    "pytest-cov": {
+      "version": ">=4.1.0,<5.0.0",
+      "purpose": "Code coverage measurement",
+      "usage": "Generating coverage reports, measuring test coverage",
+      "install_command": "pip install 'pytest-cov>=4.1.0,<5.0.0'"
+    },
+
+    "black": {
+      "version": ">=23.9.0,<24.0.0",
+      "purpose": "Code formatter",
+      "usage": "Automatic code formatting following PEP 8 standards",
+      "install_command": "pip install 'black>=23.9.0,<24.0.0'"
+    },
+
+    "flake8": {
+      "version": ">=6.1.0,<7.0.0",
+      "purpose": "Style guide enforcement",
+      "usage": "Linting, checking PEP 8 compliance",
+      "install_command": "pip install 'flake8>=6.1.0,<7.0.0'"
+    },
+
+    "isort": {
+      "version": ">=5.12.0,<6.0.0",
+      "purpose": "Import statement sorting",
+      "usage": "Organizing and sorting import statements",
+      "install_command": "pip install 'isort>=5.12.0,<6.0.0'"
+    },
+
+    "mypy": {
+      "version": ">=1.5.0,<2.0.0",
+      "purpose": "Static type checker",
+      "usage": "Type checking Python code, finding type-related bugs",
+      "install_command": "pip install 'mypy>=1.5.0,<2.0.0'"
+    },
+
+    "sphinx": {
+      "version": ">=7.1.0,<8.0.0",
+      "purpose": "Documentation generator",
+      "usage": "Building API documentation from docstrings",
+      "install_command": "pip install 'sphinx>=7.1.0,<8.0.0'"
+    },
+
+    "sphinx-rtd-theme": {
+      "version": ">=1.3.0,<2.0.0",
+      "purpose": "ReadTheDocs theme for Sphinx",
+      "usage": "Professional documentation styling",
+      "install_command": "pip install 'sphinx-rtd-theme>=1.3.0,<2.0.0'"
+    },
+
+    "ipython": {
+      "version": ">=8.15.0,<9.0.0",
+      "purpose": "Enhanced interactive shell",
+      "usage": "Interactive debugging and exploration",
+      "install_command": "pip install 'ipython>=8.15.0,<9.0.0'"
+    },
+
+    "jupyter": {
+      "version": ">=1.0.0,<2.0.0",
+      "purpose": "Notebook environment",
+      "usage": "Interactive analysis and documentation",
+      "install_command": "pip install 'jupyter>=1.0.0,<2.0.0'"
+    }
+  },
+
+  "compatibility_analysis": {
+    "numpy_pandas": {
+      "compatibility": "Full",
+      "notes": "NumPy 1.24+ works well with Pandas 2.0+, modern type support",
+      "status": "Verified"
+    },
+
+    "scipy_numpy": {
+      "compatibility": "Full",
+      "notes": "SciPy 1.10+ compatible with NumPy 1.24+",
+      "status": "Verified"
+    },
+
+    "sklearn_numpy_scipy": {
+      "compatibility": "Full",
+      "notes": "Scikit-learn 1.3+ requires NumPy 1.17.3+, compatible with modern versions",
+      "status": "Verified"
+    },
+
+    "ultralytics_torch": {
+      "compatibility": "Full",
+      "notes": "UltraLytics 8.0+ bundles torch internally, no separate torch needed",
+      "status": "Verified"
+    },
+
+    "supervision_ultralytics": {
+      "compatibility": "Full",
+      "notes": "Supervision 0.29.0 designed for UltraLytics 8.0+",
+      "status": "Verified"
+    },
+
+    "opencv_numpy": {
+      "compatibility": "Full",
+      "notes": "OpenCV 4.8+ fully compatible with NumPy 1.24+",
+      "status": "Verified"
+    },
+
+    "reportlab_pillow": {
+      "compatibility": "Full",
+      "notes": "ReportLab 4.0+ works well with Pillow 10.0+",
+      "status": "Verified"
+    },
+
+    "plotly_pandas": {
+      "compatibility": "Full",
+      "notes": "Plotly 5.17+ designed for modern Pandas 2.0+",
+      "status": "Verified"
+    }
+  },
+
+  "installation_instructions": {
+    "production_quick": "pip install -r requirements.txt",
+    "production_verbose": "pip install -r requirements.txt --verbose",
+    "development": "pip install -r requirements-dev.txt",
+    "setup_script": "python 1_preparar.py (includes model download and OpenVINO export)",
+    "sports_manual": "pip install ./sports-main (after extracting from GitHub)"
+  },
+
+  "known_issues": {
+    "issue_1": {
+      "package": "paddleocr",
+      "issue": "Large download on first use (~200MB for OCR models)",
+      "workaround": "Pre-download models or use easyocr as fallback"
+    },
+
+    "issue_2": {
+      "package": "reportlab",
+      "issue": "May need additional fonts on some systems",
+      "workaround": "Use system fonts or install reportlab[fonts]"
+    },
+
+    "issue_3": {
+      "package": "openvino",
+      "issue": "Optional dependency, not all features require it",
+      "workaround": "Install separately if CPU optimization needed"
+    },
+
+    "issue_4": {
+      "package": "easyocr",
+      "issue": "Requires different model than paddleocr",
+      "workaround": "Used as fallback only if paddleocr unavailable"
+    }
+  },
+
+  "system_requirements": {
+    "python": {
+      "minimum": "3.8",
+      "tested": ["3.9", "3.10", "3.11"],
+      "recommended": "3.11 (latest stable)"
+    },
+
+    "memory": {
+      "minimum": "4GB RAM",
+      "recommended": "8GB+ RAM for smooth operation",
+      "gpu_optional": "CUDA-capable GPU (optional, CPU works fine with OpenVINO)"
+    },
+
+    "storage": {
+      "models": "~500MB (3 YOLO models)",
+      "ocr_models": "~200MB (OCR models, downloaded on first use)",
+      "python_packages": "~2-3GB (all dependencies including ML packages)"
+    },
+
+    "processor": {
+      "minimum": "Any modern processor",
+      "recommended": "Intel processor for OpenVINO optimization"
+    }
+  },
+
+  "version_pinning_strategy": {
+    "rationale": "Use semantic versioning ranges (^x.y.z) to allow patch/minor updates while preventing breaking changes",
+
+    "pinned_packages": {
+      "supervision": "Pinned exactly (==0.29.0) because project explicitly requires this version",
+      "reason": "Critical API compatibility, ensure consistency across deployments"
+    },
+
+    "ranges_used": {
+      "major": ">=X.Y.Z,<(X+1).0.0 - Allows minor/patch updates, blocks breaking changes",
+      "rationale": "Balances security updates and bug fixes with stability"
+    }
+  },
+
+  "testing_recommendations": {
+    "unit_tests": "Run with: pytest tests/ -v",
+    "coverage": "Run with: pytest tests/ --cov=core --cov=pipeline --cov=utils",
+    "type_check": "Run with: mypy core/ pipeline/ utils/",
+    "linting": "Run with: flake8 core/ pipeline/ utils/ scripts/",
+    "formatting": "Run with: black core/ pipeline/ utils/ scripts/"
+  },
+
+  "deployment_notes": {
+    "docker": "Use Python 3.10-slim as base image, install requirements.txt",
+    "virtual_env": "Create isolated venv: python -m venv venv && source venv/bin/activate",
+    "conda": "conda env create -f requirements.txt (may need conversion to environment.yml)",
+    "ci_cd": "Pin exact versions in CI/CD pipelines for reproducibility"
+  }
+}
