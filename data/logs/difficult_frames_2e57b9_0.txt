@@ -1,0 +1,41 @@
+Frames difíciles para 2e57b9_0
+==================================================
+
+Frame     0 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame     2 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame     4 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame    22 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    28 | Conf: 0.43 | low_ball_conf+low_pitch_conf
+Frame    30 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    36 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    38 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    40 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    42 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    44 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    54 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    60 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame    62 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame    92 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame    94 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame    96 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame    98 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   102 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   104 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame   106 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   132 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   134 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   136 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   138 | Conf: 0.46 | low_ball_conf+low_pitch_conf
+Frame   140 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   142 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   154 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame   170 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   214 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   238 | Conf: 0.39 | low_ball_conf+low_pitch_conf
+Frame   240 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   314 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   320 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   370 | Conf: 0.43 | low_ball_conf+low_pitch_conf
+Frame   372 | Conf: 0.43 | low_ball_conf+low_pitch_conf
+Frame   380 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   382 | Conf: 0.45 | low_ball_conf+low_pitch_conf

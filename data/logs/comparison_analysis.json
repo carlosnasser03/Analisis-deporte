@@ -1,0 +1,240 @@
+{
+  "metadata": {
+    "analysis_date": "2026-07-06T13:14:51.856080",
+    "before_file": "single_summary.json",
+    "after_file": "summary_573e61_0.json",
+    "total_frames_before": 500,
+    "total_frames_after": 200
+  },
+  "components": {
+    "Jugadores": {
+      "metrics": {
+        "confidence": {
+          "before": {
+            "mean": 0.9079740706682206,
+            "min": 0.8416597247123718,
+            "max": 0.925887942314148,
+            "std": 0.014465699558812137
+          },
+          "after": {
+            "mean": 0.8887341746687889,
+            "min": 0.8168725967407227,
+            "max": 0.9094390869140625,
+            "std": 0.016077007373393893
+          },
+          "delta": {
+            "mean": -0.01924,
+            "min": -0.024787,
+            "max": -0.016449,
+            "std": 0.001611
+          },
+          "improvement_pct": {
+            "mean": -2.12,
+            "min": -2.95,
+            "max": -1.78,
+            "std": 11.14
+          }
+        },
+        "count": {
+          "before": {
+            "mean": 20.796,
+            "min": 19.0,
+            "max": 24.0,
+            "std": 0.9178147961326403
+          },
+          "after": {
+            "mean": 20.975,
+            "min": 19.0,
+            "max": 24.0,
+            "std": 0.8685476383020104
+          },
+          "delta": {
+            "mean": 0.179,
+            "min": 0.0,
+            "max": 0.0,
+            "std": -0.049267
+          },
+          "improvement_pct": {
+            "mean": 0.86,
+            "min": 0.0,
+            "max": 0.0,
+            "std": -5.37
+          }
+        },
+        "failures": {
+          "before": 0,
+          "after": 0,
+          "delta": 0,
+          "improvement_pct": 0
+        }
+      }
+    },
+    "Balón": {
+      "metrics": {
+        "confidence": {
+          "before": {
+            "mean": 0.6201981572508812,
+            "min": 0.0,
+            "max": 0.8889552354812622,
+            "std": 0.3051629222307767
+          },
+          "after": {
+            "mean": 0.2985431361198425,
+            "min": 0.0,
+            "max": 0.8415639996528625,
+            "std": 0.34738051491235566
+          },
+          "delta": {
+            "mean": -0.321655,
+            "min": 0,
+            "max": -0.047391,
+            "std": 0.042218
+          },
+          "improvement_pct": {
+            "mean": -51.86,
+            "min": 0,
+            "max": -5.33,
+            "std": 13.83
+          }
+        },
+        "failures": {
+          "before": 91,
+          "after": 114,
+          "delta": 23,
+          "improvement_pct": 25.27
+        }
+      }
+    },
+    "Cancha": {
+      "metrics": {
+        "pitch_confidence": {
+          "before": {
+            "mean": 0.27796644896268846,
+            "min": 0.21079790592193604,
+            "max": 0.40850579738616943,
+            "std": 0.05276377364760268
+          },
+          "after": {
+            "mean": 0.384257575199008,
+            "min": 0.2256074696779251,
+            "max": 0.4916815459728241,
+            "std": 0.09583109005354512
+          },
+          "delta": {
+            "mean": 0.106291,
+            "min": 0.01481,
+            "max": 0.083176,
+            "std": 0.043067
+          },
+          "improvement_pct": {
+            "mean": 38.24,
+            "min": 7.03,
+            "max": 20.36,
+            "std": 81.62
+          }
+        },
+        "keypoints_valid": {
+          "before": {
+            "mean": 8.47,
+            "min": 6.0,
+            "max": 13.0,
+            "std": 1.7056083958517558
+          },
+          "after": {
+            "mean": 12.5,
+            "min": 7.0,
+            "max": 17.0,
+            "std": 3.5482389998420345
+          },
+          "delta": {
+            "mean": 4.03,
+            "min": 1.0,
+            "max": 4.0,
+            "std": 1.842631
+          },
+          "improvement_pct": {
+            "mean": 47.58,
+            "min": 16.67,
+            "max": 30.77,
+            "std": 108.03
+          }
+        },
+        "failures": {
+          "before": 500,
+          "after": 200,
+          "delta": -300,
+          "improvement_pct": -60.0
+        }
+      }
+    },
+    "Homografía": {
+      "metrics": {
+        "valid": {
+          "before": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0
+          },
+          "after": {
+            "mean": 1.0,
+            "min": 1.0,
+            "max": 1.0,
+            "std": 0.0
+          },
+          "delta": {
+            "mean": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "std": 0
+          },
+          "improvement_pct": {
+            "mean": 0.0,
+            "min": 0.0,
+            "max": 0.0,
+            "std": 0
+          }
+        },
+        "failures": {
+          "before": 0,
+          "after": 0,
+          "delta": 0,
+          "improvement_pct": 0
+        }
+      }
+    }
+  },
+  "failure_rates_comparison": {
+    "player_low_confidence": {
+      "before": "0.0%",
+      "after": "0.0%"
+    },
+    "pitch_low_confidence": {
+      "before": "100.0%",
+      "after": "100.0%"
+    },
+    "ball_low_confidence": {
+      "before": "18.2%",
+      "after": "57.0%"
+    },
+    "homography_invalid": {
+      "before": "0.0%",
+      "after": "0.0%"
+    },
+    "team_classification_failed": {
+      "before": "100.0%",
+      "after": "100.0%"
+    }
+  },
+  "summary": {
+    "key_findings": [
+      "Confianza de jugadores DISMINUYO en 0.0192 (-2.12%)",
+      "Confianza de balon DISMINUYO en 0.3217",
+      "Confianza de cancha MEJORO en 0.1063 (38.24%)",
+      "Puntos clave de cancha MEJORARON en 4.0300 (47.58%)",
+      "Fallos de cancha DISMINUYERON en 300 frames (60.00%)",
+      "Fallos de balon AUMENTARON en 23 frames (25.27%)"
+    ],
+    "overall_assessment": "La optimizacion produjo resultados MIXTOS: mejoras significativas en deteccion de cancha (+47.88% confianza media, +47.43% puntos clave validos) pero con trade-offs en precision de confianza de jugadores (-2.11%) y mas fallos en balon (+25.27%). El objetivo de aumentar sensibilidad se logro parcialmente."
+  }
+}

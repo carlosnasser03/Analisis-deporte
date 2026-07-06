@@ -1,0 +1,206 @@
+{
+  "project": "Scout AI",
+  "modules_created": 4,
+  "timestamp": "2026-07-06T00:00:00Z",
+  "summary": "Creación de módulos complementarios para Scout AI: batch processor, result combiner, logger y file handler",
+  "modules": {
+    "1_batch_processor": {
+      "file_path": "pipeline/batch_processor.py",
+      "lines_of_code": 286,
+      "description": "Procesador de videos en batch usando multiprocessing",
+      "main_class": "BatchProcessor",
+      "key_features": [
+        "Procesamiento paralelo de múltiples videos",
+        "Gestión automática de workers",
+        "Consolidación de resultados",
+        "Manejo robusto de errores en batch",
+        "Reporte detallado de procesamiento"
+      ],
+      "key_methods": [
+        "process_batch(video_dir) - procesa todos los videos en una carpeta",
+        "process_parallel(videos, num_workers) - procesamiento paralelo con multiprocessing",
+        "get_batch_results() - obtiene resultados consolidados",
+        "get_processing_statistics() - estadísticas detalladas del batch",
+        "save_batch_report(output_path) - guarda reporte en JSON"
+      ],
+      "dependencies": [
+        "multiprocessing.Pool",
+        "concurrent.futures.ProcessPoolExecutor",
+        "pathlib.Path",
+        "datetime",
+        "logging"
+      ],
+      "performance_features": {
+        "parallelization": "ProcessPoolExecutor para máximo rendimiento",
+        "timeout_handling": "timeout configurable por worker",
+        "resource_management": "límite de workers configurables",
+        "error_resilience": "continúa procesando si un archivo falla"
+      }
+    },
+    "2_result_combiner": {
+      "file_path": "pipeline/result_combiner.py",
+      "lines_of_code": 310,
+      "description": "Combina y consolida resultados de múltiples procesados",
+      "main_class": "ResultCombiner",
+      "key_features": [
+        "Merge de frames fragmentados",
+        "Consolidación de estadísticas",
+        "Unificación de tracks con detección de duplicados",
+        "Resolución de conflictos de tracks solapados",
+        "Cálculo automático de promedios y distribuciones"
+      ],
+      "key_methods": [
+        "combine_frames(frame_chunks) - une frames de múltiples chunks",
+        "consolidate_stats(chunks) - consolida estadísticas totales",
+        "merge_tracks(all_tracks) - unifica tracks con IDs únicos",
+        "resolve_track_conflicts(tracks) - resuelve tracks duplicados o solapados",
+        "get_combined_results() - obtiene resultados consolidados",
+        "export_to_json(output_path) - exporta a JSON",
+        "get_summary() - resumen ejecutivo de resultados"
+      ],
+      "dependencies": [
+        "json",
+        "collections.defaultdict",
+        "datetime",
+        "logging"
+      ],
+      "statistical_features": {
+        "confidence_aggregation": "promedio, mín, máx de confianzas",
+        "class_distribution": "conteo y distribución por clase",
+        "overlap_detection": "cálculo de solapamiento para frames",
+        "track_resolution": "merge automático con 80% threshold"
+      }
+    },
+    "3_logger": {
+      "file_path": "utils/logger.py",
+      "lines_of_code": 358,
+      "description": "Sistema centralizado de logging para Scout AI",
+      "main_class": "ScoutLogger",
+      "key_features": [
+        "Logging a archivo y stdout simultáneamente",
+        "Registro de detecciones con contexto completo",
+        "Registro estructurado de errores",
+        "Historial de eventos con timestamps",
+        "Estadísticas automáticas de detecciones",
+        "Rotación de logs automática"
+      ],
+      "key_methods": [
+        "log_detection(frame_id, detections) - registra detecciones con confianza",
+        "log_error(error, context, severity) - registra errores con contexto",
+        "log_processing_start/end() - marca inicio y fin de procesamiento",
+        "log_frame_processed(frame_id, num_detections) - log de frame individual",
+        "log_tracking_update(track_id, frame_id, action) - actualizaciones de tracking",
+        "get_summary() - resumen de toda la sesión",
+        "get_detection_summary() - estadísticas por clase",
+        "get_error_summary() - resumen de errores",
+        "export_logs(output_path) - exporta todo a JSON",
+        "rotate_log(max_size_mb) - rota logs cuando alcanzan tamaño"
+      ],
+      "output_features": {
+        "file_logging": "archivo de log persistente",
+        "console_logging": "output a stdout con timestamps",
+        "history_tracking": "historial completo de eventos",
+        "statistics": "agregación automática de métricas",
+        "export": "exportación a JSON para análisis"
+      }
+    },
+    "4_file_handler": {
+      "file_path": "utils/file_handler.py",
+      "lines_of_code": 380,
+      "description": "Manejador centralizado de archivos para Scout AI",
+      "main_class": "FileHandler",
+      "key_features": [
+        "Lectura/escritura de JSON con pretty-print",
+        "Lectura/escritura de CSV con mapeo automático",
+        "Creación automática de directorios",
+        "Backup automático de archivos existentes",
+        "Validación de rutas",
+        "Información detallada de archivos",
+        "Limpieza de archivos antiguos"
+      ],
+      "key_methods": [
+        "save_json(data, path, pretty, backup) - guarda JSON con backup opcional",
+        "load_json(path) - carga JSON con manejo de errores",
+        "save_csv(data, path, fieldnames, backup) - guarda CSV bien formateado",
+        "load_csv(path) - carga CSV en lista de dicts",
+        "create_output_dir(path) - crea directorios necesarios",
+        "list_files(directory, extension) - lista archivos con filtro",
+        "delete_file(path, backup) - elimina con backup",
+        "copy_file(source, destination) - copia archivos",
+        "move_file(source, destination) - mueve archivos",
+        "get_file_info(path) - info detallada del archivo",
+        "merge_json_files(file_list, output_path) - merge de múltiples JSON",
+        "validate_path(path) - valida rutas",
+        "get_directory_size(directory) - tamaño total",
+        "cleanup_old_files(directory, days) - limpia archivos antiguos"
+      ],
+      "file_operations": {
+        "json_support": "lectura/escritura con indentación",
+        "csv_support": "procesamiento de datos tabulares",
+        "backup_system": "backup automático con timestamp",
+        "path_handling": "creación automática de directorios",
+        "error_handling": "manejo robusto de excepciones"
+      }
+    }
+  },
+  "directory_structure": {
+    "pipeline": {
+      "batch_processor.py": "Procesamiento en paralelo de múltiples videos",
+      "result_combiner.py": "Consolidación de resultados fragmentados"
+    },
+    "utils": {
+      "logger.py": "Sistema centralizado de logging",
+      "file_handler.py": "Manejo unificado de archivos"
+    }
+  },
+  "integration_points": {
+    "batch_to_combiner": "BatchProcessor produce resultados que ResultCombiner consolida",
+    "logging_integration": "Todos los módulos usan ScoutLogger para eventos",
+    "file_handling": "FileHandler es usado por todos para I/O",
+    "data_flow": "Batch → Combine → Log → Save con FileHandler"
+  },
+  "technical_specifications": {
+    "parallelization": {
+      "method": "concurrent.futures.ProcessPoolExecutor",
+      "scalability": "Configurable num_workers para ajustar a recursos",
+      "timeout": "Timeout configurable por tarea"
+    },
+    "data_persistence": {
+      "json": "Pretty-printed con encoding UTF-8",
+      "csv": "Delimitado por comas con headers",
+      "backup": "Automático con timestamp"
+    },
+    "logging": {
+      "dual_output": "Archivo y stdout simultáneamente",
+      "history": "Completo con timestamps",
+      "export": "JSON para análisis posterior"
+    }
+  },
+  "total_lines_of_code": 1334,
+  "total_methods": 56,
+  "estimated_complexity": "Moderate to High",
+  "testing_recommendations": [
+    "Unit tests para cada clase",
+    "Integration tests entre módulos",
+    "Performance tests con large batches",
+    "Error handling tests con videos inválidos",
+    "Concurrency tests con múltiples workers"
+  ],
+  "usage_example": {
+    "step_1": "processor = BatchProcessor(max_workers=4)",
+    "step_2": "results = processor.process_batch('/path/to/videos')",
+    "step_3": "combiner = ResultCombiner()",
+    "step_4": "combined = combiner.combine_frames(results['frames'])",
+    "step_5": "logger.log_detection(frame_id, detections)",
+    "step_6": "file_handler.save_json(combined, 'output.json')"
+  },
+  "completion_status": "COMPLETED",
+  "status_details": {
+    "batch_processor": "✓ Creado - 286 líneas",
+    "result_combiner": "✓ Creado - 310 líneas",
+    "logger": "✓ Creado - 358 líneas",
+    "file_handler": "✓ Creado - 380 líneas",
+    "summary_json": "✓ Generado",
+    "total_deliverables": "5 archivos"
+  }
+}

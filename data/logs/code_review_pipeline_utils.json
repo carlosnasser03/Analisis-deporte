@@ -1,0 +1,697 @@
+{
+  "review_metadata": {
+    "date": "2026-07-06",
+    "files_reviewed": 8,
+    "total_lines": 2988,
+    "review_focus": "Architecture, APIs, Testing, Robustness, Compatibility",
+    "reviewer": "Professional Code Audit"
+  },
+  "executive_summary": {
+    "overall_score": 72,
+    "status": "ACCEPTABLE WITH CRITICAL ISSUES",
+    "summary": "El código muestra buena arquitectura con patrones de diseño sólidos, separación clara de responsabilidades y APIs bien documentadas. Sin embargo, hay problemas críticos relacionados con testabilidad, stubs de implementación sin completar y dependencias no versionadas. Requiere correcciones antes de producción.",
+    "strengths": [
+      "Excelente uso de dataclasses para estructuras de datos",
+      "Separación clara de responsabilidades entre componentes",
+      "Documentación completa con docstrings",
+      "Manejo robusto de errores y excepciones",
+      "Inyección de dependencias bien implementada",
+      "Logging centralizado y comprehensive"
+    ],
+    "critical_issues_count": 5,
+    "major_issues_count": 8,
+    "minor_issues_count": 5
+  },
+  "by_category": {
+    "architecture": {
+      "score": 78,
+      "assessment": "Bien estructurado con patrones reconocibles",
+      "issues": [
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/batch_processor.py",
+          "line": 159,
+          "issue": "Método _process_single_video() es apenas un STUB de simulación",
+          "description": "El método solo simula procesamiento sin realmente procesar videos. Retorna datos ficticios como frames: 0, detections: 0. Esto hace que el módulo BatchProcessor no sea funcional.",
+          "impact": "BatchProcessor es inutil para procesamiento real de videos",
+          "fix": "Implementar _process_single_video() para llamar VideoProcessor o similar"
+        },
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/frame_processor.py",
+          "line": 108,
+          "issue": "VALID_CLASSES hardcoded como constante de clase",
+          "description": "Clases de objetos {0: 'player', 1: 'ball', 2: 'referee', 3: 'pitch'} están hardcoded. Reduce flexibilidad para diferentes casos de uso.",
+          "impact": "Difícil adaptarse a otros modelos YOLO con diferentes clases",
+          "fix": "Pasar VALID_CLASSES como parámetro en __init__"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "pipeline/video_processor.py",
+          "line": 476,
+          "issue": "create_default() asume específicamente ultralytics YOLO",
+          "description": "Importa hardcoded 'from ultralytics import YOLO'. Reduce flexibilidad del detector.",
+          "impact": "No se puede usar otros detectores sin modificar código",
+          "fix": "Abstraer detector o pasar como parámetro"
+        }
+      ]
+    },
+    "apis_and_interfaces": {
+      "score": 82,
+      "assessment": "APIs bien definidas y documentadas, pero con algunos issues de consistency",
+      "issues": [
+        {
+          "severity": "MAJOR",
+          "file": "utils/file_handler.py",
+          "line": 87,
+          "issue": "load_json() retorna None sin claridad en tipo hint",
+          "description": "Retorna Optional[Dict] cuando falla, pero no hay manera de distinguir entre archivo vacío y error. Debería usar exception o Result type.",
+          "impact": "Código cliente debe asumir None es error",
+          "fix": "Usar custom exception o Result[Dict, Error]"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "pipeline/frame_processor.py",
+          "line": 190,
+          "issue": "Parámetro se llama 'frame_number' pero en ejemplos aparece como 'frame_num'",
+          "description": "Inconsistencia en nombre de parámetro en docstring ejemplo vs definición real",
+          "impact": "Confusión para usuarios del API",
+          "fix": "Usar nombre consistente en ejemplos"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "utils/validators.py",
+          "line": 223,
+          "issue": "validate_detection_output() requiere keys específicas pero no documenta todas",
+          "description": "Requiere {'balls', 'players', 'frame_id', 'timestamp'} pero el ejemplo no muestra estos campos opcionales vs requeridos.",
+          "impact": "API confusa sobre qué es requerido",
+          "fix": "Documentar explícitamente requeridos vs opcionales"
+        }
+      ]
+    },
+    "testing_readiness": {
+      "score": 65,
+      "assessment": "Difícil de testear sin mocks complejos, especialmente código que usa OpenCV",
+      "issues": [
+        {
+          "severity": "CRITICAL",
+          "file": "pipeline/video_processor.py",
+          "line": 263,
+          "issue": "cv2.VideoCapture hardcoded sin abstracción",
+          "description": "VideoProcessor.process_video() crea directamente cv2.VideoCapture(). Imposible mockearlo en tests unitarios.",
+          "impact": "Requiere video real para tests. Tests son lentos. No hay isolamiento.",
+          "fix": "Inyectar VideoReader abstracción, crear VideoCapture factory"
+        },
+        {
+          "severity": "CRITICAL",
+          "file": "pipeline/frame_processor.py",
+          "line": 513,
+          "issue": "cv2.cvtColor hardcoded en extract_features()",
+          "description": "Conversión BGR→HSV está hardcoded sin abstracción. No se puede testear sin OpenCV.",
+          "impact": "Tests deben tener cv2 disponible",
+          "fix": "Inyectar ColorConverter abstracción"
+        },
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/batch_processor.py",
+          "line": 135,
+          "issue": "ProcessPoolExecutor no es testeable sin arquitectura especial",
+          "description": "Usa ProcessPoolExecutor directamente. Difícil mockear en tests.",
+          "impact": "Tests requieren multiprocessing real",
+          "fix": "Inyectar executor como parámetro, crear ExecutorFactory"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "utils/video_splitter.py",
+          "line": 122,
+          "issue": "cv2.VideoCapture usado sin abstracción",
+          "description": "split_video() crea VideoCapture directamente. Sin isolamiento.",
+          "impact": "Tests necesitan video real",
+          "fix": "Inyectar VideoReader abstracción"
+        }
+      ]
+    },
+    "robustness": {
+      "score": 75,
+      "assessment": "Buen manejo de errores y validaciones, pero faltan validaciones en algunos paths",
+      "issues": [
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/video_processor.py",
+          "line": 320,
+          "issue": "Falta validación de FrameProcessor antes de usar",
+          "description": "Se asume que frame_processor inicializado correctamente en _initialize_frame_processor(), pero no hay checks",
+          "impact": "Fallos crypticos si inicialización falla silenciosamente",
+          "fix": "Agregar validación post-inicialización"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "utils/file_handler.py",
+          "line": 199,
+          "issue": "create_output_dir() retorna True incluso si directorio ya existe",
+          "description": "Ambigüedad: no se sabe si se creó o ya existía. Puede confundir logs.",
+          "impact": "Dificultad en debugging",
+          "fix": "Retornar enum {CREATED, EXISTING, ERROR}"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "pipeline/result_combiner.py",
+          "line": 145,
+          "issue": "min/max sobre listas posiblemente vacías no tiene try/except",
+          "description": "En consolidate_stats(), si confidence_scores está vacío, min/max fallan",
+          "impact": "ValueError si no hay confianzas",
+          "fix": "Agregar checks de lista vacía"
+        },
+        {
+          "severity": "LOW",
+          "file": "utils/logger.py",
+          "line": 253,
+          "issue": "get_summary() asume confidence_scores no vacío",
+          "description": "min()/max() sobre lista potencialmente vacía",
+          "impact": "Crash si no hay detecciones",
+          "fix": "Agregar checks"
+        }
+      ]
+    },
+    "compatibility": {
+      "severity": "HIGH",
+      "score": 58,
+      "assessment": "Dependencias no versionadas, problemas con logging global, sin requirements.txt",
+      "issues": [
+        {
+          "severity": "CRITICAL",
+          "file": "PROYECTO (global)",
+          "line": 0,
+          "issue": "NO EXISTE requirements.txt",
+          "description": "Dependencias no documentadas. No hay forma de reproducir environment.",
+          "impact": "Imposible desplegar sin manualmente averiguar qué instalar",
+          "fix": "Crear requirements.txt con versiones pinned"
+        },
+        {
+          "severity": "CRITICAL",
+          "file": "utils/video_splitter.py",
+          "line": 25,
+          "issue": "logging.basicConfig() al nivel del módulo",
+          "description": "Configura logging globalmente cuando se importa. Interfiere con otros módulos que quieran configurar logging.",
+          "impact": "Difícil de testear. Puede romper logging de otras aplicaciones.",
+          "fix": "Remover basicConfig(), usar logger tradicional"
+        },
+        {
+          "severity": "CRITICAL",
+          "file": "utils/validators.py",
+          "line": 26,
+          "issue": "logging.basicConfig() al nivel del módulo",
+          "description": "Mismo problema que video_splitter.py",
+          "impact": "Contaminación de logging global",
+          "fix": "Remover basicConfig()"
+        },
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/ (todos)",
+          "line": 0,
+          "issue": "Dependencias no versionadas: cv2, numpy, ultralytics",
+          "description": "Importa cv2, numpy, ultralytics sin especificar versiones. Riesgo de breaking changes.",
+          "impact": "Incompatibilidad entre ambientes",
+          "fix": "Crear requirements.txt: opencv-python==4.x.x, numpy==1.x.x, ultralytics==8.x.x"
+        },
+        {
+          "severity": "MAJOR",
+          "file": "pipeline/video_processor.py",
+          "line": 476,
+          "issue": "create_default() importa ultralytics solo si se llama",
+          "description": "Import condicional dentro de función. Si ultralytics no instalado, error solo al llamar.",
+          "impact": "Errores no detectados en inicio, sino en runtime",
+          "fix": "Validar dependencias en __init__ o requirements.txt"
+        },
+        {
+          "severity": "MEDIUM",
+          "file": "utils/validators.py",
+          "line": 409,
+          "issue": "psutil es opcional pero no explícitamente documentado",
+          "description": "check_system_resources() usa psutil pero no especifica que es opcional en requirements",
+          "impact": "Confusión sobre si es requerida",
+          "fix": "requirements-dev.txt o separar en extras_require"
+        }
+      ]
+    }
+  },
+  "file_by_file_review": {
+    "pipeline/video_processor.py": {
+      "lines": 402,
+      "status": "GOOD with ISSUES",
+      "score": 74,
+      "architecture": {
+        "score": 78,
+        "findings": "Excelente uso del patrón Facade. VideoProcessor orquesta bien los componentes. Factory method create_default() es buena práctica. Dataclasses para config/result.",
+        "issues": ["detector/tracker/analyzer pueden ser None sin claridad del contrato"]
+      },
+      "apis": {
+        "score": 80,
+        "findings": "APIs claras: process_video(), process(), reset(). Docstrings detallados. ProcessingResult bien estructurado.",
+        "issues": ["setup_detectors() debería ser validación en __init__, no en process_video()"]
+      },
+      "testing": {
+        "score": 60,
+        "findings": "Inyección de dependencias buena, pero cv2.VideoCapture hardcoded.",
+        "issues": ["Imposible testear sin video real", "cv2.VideoCapture debe ser inyectable"]
+      },
+      "robustness": {
+        "score": 80,
+        "findings": "Validaciones exhaustivas. Manejo de excepciones. Logging abundante. cap.release() correcto.",
+        "issues": ["Falta validación de frame_processor post-inicialización"]
+      },
+      "compatibility": {
+        "score": 65,
+        "findings": "Usa cv2, numpy, tqdm. Sin versiones especificadas.",
+        "issues": ["No hay requirements.txt", "import ultralytics condicional en create_default()"]
+      }
+    },
+    "pipeline/frame_processor.py": {
+      "lines": 476,
+      "status": "GOOD with ISSUES",
+      "score": 71,
+      "architecture": {
+        "score": 82,
+        "findings": "Excelente arquitectura con enums (DetectionQuality), dataclasses (Detection, FrameData). Métodos muy bien separados: detect → validate → track → extract → assign.",
+        "issues": ["VALID_CLASSES hardcoded, debería ser parámetro"]
+      },
+      "apis": {
+        "score": 82,
+        "findings": "process_frame() es limpio. Métodos helper bien nombrados. Dataclasses para datos.",
+        "issues": ["frame_number vs frame_num inconsistencia en ejemplos", "VALID_CLASSES no documentado como configurable"]
+      },
+      "testing": {
+        "score": 62,
+        "findings": "Inyección de dependencias. Métodos pequeños y focusados.",
+        "issues": ["cv2.cvtColor hardcoded en extract_features()", "No se puede testear extract_features() sin cv2"]
+      },
+      "robustness": {
+        "score": 78,
+        "findings": "Validación exhaustiva de detecciones. Quality score calculation. Logging de rechazos.",
+        "issues": ["_assign_teams() asume features existe", "Falta validación de team_classifier.classify() retorno"]
+      },
+      "compatibility": {
+        "score": 65,
+        "findings": "Depende de cv2, numpy. Sin versiones.",
+        "issues": ["cv2 como dependencia hard", "Sin requirements.txt"]
+      }
+    },
+    "pipeline/batch_processor.py": {
+      "lines": 310,
+      "status": "INCOMPLETE - NOT READY FOR PRODUCTION",
+      "score": 58,
+      "architecture": {
+        "score": 72,
+        "findings": "ProcessPoolExecutor bien usado. Futures manejo correcto. Consolidación de resultados.",
+        "issues": ["_process_single_video() es STUB, no real"]
+      },
+      "apis": {
+        "score": 75,
+        "findings": "process_batch(), process_parallel(), process_with_callback(). Callbacks inyectable.",
+        "issues": ["_process_single_video() debe ser implementado o abstract"]
+      },
+      "testing": {
+        "score": 55,
+        "findings": "Callback inyectable. Parámetros configurables.",
+        "issues": ["ProcessPoolExecutor no mockeable", "_process_single_video() es stub"]
+      },
+      "robustness": {
+        "score": 72,
+        "findings": "Timeout handling. Excepciones capturadas. Stats consolidadas.",
+        "issues": ["_process_single_video() debe validar entrada de verdad"]
+      },
+      "compatibility": {
+        "score": 65,
+        "findings": "Solo stdlib: logging, pathlib, multiprocessing.",
+        "issues": ["Sin requirements.txt"]
+      }
+    },
+    "pipeline/result_combiner.py": {
+      "lines": 382,
+      "status": "GOOD with MINOR ISSUES",
+      "score": 78,
+      "architecture": {
+        "score": 80,
+        "findings": "Consolidación lógica clara. Merge de tracks inteligente. Detección de solapamiento.",
+        "issues": ["Cálculo de overlap podría ser mejor documentado"]
+      },
+      "apis": {
+        "score": 82,
+        "findings": "APIs bien nombradas. combine_frames(), consolidate_stats(), merge_tracks(). Métodos helper.",
+        "issues": ["None"]
+      },
+      "testing": {
+        "score": 82,
+        "findings": "Lógica pura. Sin I/O. Fácil testear. Sin estado compartido.",
+        "issues": ["None"]
+      },
+      "robustness": {
+        "score": 72,
+        "findings": "Validación de tipos. Manejo de empties.",
+        "issues": ["min/max sobre listas potencialmente vacías", "BUG: línea 145 sin checks para list vacía"]
+      },
+      "compatibility": {
+        "score": 85,
+        "findings": "Solo stdlib: json, logging, typing, collections.",
+        "issues": ["Sin versiones pero sin dependencias externas"]
+      }
+    },
+    "utils/logger.py": {
+      "lines": 395,
+      "status": "GOOD",
+      "score": 80,
+      "architecture": {
+        "score": 82,
+        "findings": "Logger centralizado con múltiples métodos especializados. Historia en memoria. Resúmenes estadísticos.",
+        "issues": ["Historial no acotado en memoria - puede crecer indefinidamente"]
+      },
+      "apis": {
+        "score": 85,
+        "findings": "APIs claras y especializadas. log_detection(), log_error(), log_processing_*(), get_summary().",
+        "issues": ["None"]
+      },
+      "testing": {
+        "score": 82,
+        "findings": "Historia en memoria testeable. Sin efectos secundarios en tests. Parámetros inyectables.",
+        "issues": ["None"]
+      },
+      "robustness": {
+        "score": 78,
+        "findings": "Crea directorios. Manejo de errores. rotate_log(). clear_history().",
+        "issues": ["Historial puede crecer sin límite", "get_summary() asume confidence_scores no vacío"]
+      },
+      "compatibility": {
+        "score": 90,
+        "findings": "Solo stdlib: logging, json, datetime, pathlib.",
+        "issues": ["None"]
+      }
+    },
+    "utils/file_handler.py": {
+      "lines": 484,
+      "status": "GOOD with MINOR ISSUES",
+      "score": 79,
+      "architecture": {
+        "score": 82,
+        "findings": "Centralización de I/O. CRUD para JSON/CSV. Backup automático. Path handling con pathlib.",
+        "issues": ["backup_dir hardcoded como 'backups'"]
+      },
+      "apis": {
+        "score": 78,
+        "findings": "Excelente cobertura: save/load json/csv, file ops, dir ops, cleanup.",
+        "issues": ["load_json/load_csv retornan None sin claridad", "validate_path() es trivial"]
+      },
+      "testing": {
+        "score": 85,
+        "findings": "Métodos pequeños. Backup deshabilitado. _create_backup() privado. Mockeable.",
+        "issues": ["None"]
+      },
+      "robustness": {
+        "score": 76,
+        "findings": "Validación de archivo. Creación de directorios. Backup. Encoding explícito.",
+        "issues": ["create_output_dir() retorna True ambiguamente", "cleanup_old_files() sin validación de directorio"]
+      },
+      "compatibility": {
+        "score": 90,
+        "findings": "Solo stdlib: json, csv, os, shutil, logging, pathlib.",
+        "issues": ["None"]
+      }
+    },
+    "utils/video_splitter.py": {
+      "lines": 293,
+      "status": "GOOD with ISSUES",
+      "score": 72,
+      "architecture": {
+        "score": 78,
+        "findings": "ChunkInfo dataclass. Split/merge logic clear. Metadata saved.",
+        "issues": ["logging.basicConfig() contamina global"]
+      },
+      "apis": {
+        "score": 80,
+        "findings": "split_video(), merge_chunks(), get_chunk_info(), get_statistics().",
+        "issues": ["None"]
+      },
+      "testing": {
+        "score": 60,
+        "findings": "Inyección de parámetros. ChunkInfo testeable.",
+        "issues": ["cv2.VideoCapture hardcoded", "logging.basicConfig() en module level"]
+      },
+      "robustness": {
+        "score": 76,
+        "findings": "Validación de archivo. cap.isOpened(). Resource cleanup. Logging detallado.",
+        "issues": ["_extract_chunk() no valida que cap.read() tenga éxito"]
+      },
+      "compatibility": {
+        "score": 70,
+        "findings": "Depende de cv2, numpy. Sin versiones.",
+        "issues": ["logging.basicConfig() rompe compatibilidad", "Sin requirements.txt"]
+      }
+    },
+    "utils/validators.py": {
+      "lines": 442,
+      "status": "GOOD with ISSUES",
+      "score": 76,
+      "architecture": {
+        "score": 80,
+        "findings": "Múltiples validator classes. Static methods. ValidationResult consistent. validate_all() factory.",
+        "issues": ["logging.basicConfig() contamina global"]
+      },
+      "apis": {
+        "score": 84,
+        "findings": "Excelente cobertura: VideoValidator, DetectionValidator, ConfigValidator, DependencyValidator.",
+        "issues": ["validate_detection_output() requiere fields no documentado explícitamente requeridos"]
+      },
+      "testing": {
+        "score": 75,
+        "findings": "Static methods. Sin estado. Retornos consistentes.",
+        "issues": ["logging.basicConfig() en module level"]
+      },
+      "robustness": {
+        "score": 74,
+        "findings": "Validación multivariada exhaustiva. Sample frame reads. YAML parsing con try/except.",
+        "issues": ["check_system_resources() depende de psutil opcional", "logging.basicConfig() oculta errores"]
+      },
+      "compatibility": {
+        "score": 68,
+        "findings": "Depende de cv2, yaml. psutil opcional.",
+        "issues": ["logging.basicConfig() rompe compatibilidad", "yaml no pinned", "psutil como optional no documentado en requirements"]
+      }
+    }
+  },
+  "critical_issues": [
+    {
+      "id": "CRIT-001",
+      "severity": "BLOCKER",
+      "title": "batch_processor.py: _process_single_video() es STUB sin implementación",
+      "description": "El método _process_single_video() es apenas una simulación que retorna números ficticios (frames: 0, detections: 0). Hace que BatchProcessor sea completamente inútil para procesamiento real.",
+      "files": ["pipeline/batch_processor.py:159"],
+      "impact": "BatchProcessor no puede procesar videos reales",
+      "priority": 1,
+      "fix": "Implementar _process_single_video() para realmente procesar el video. Puede llamar VideoProcessor internamente o tener su propia lógica."
+    },
+    {
+      "id": "CRIT-002",
+      "severity": "BLOCKER",
+      "title": "NO EXISTE requirements.txt - Dependencias no documentadas",
+      "description": "Ningún requirements.txt en el proyecto. Dependencias como cv2, numpy, ultralytics, yaml, etc. sin especificar versiones. Imposible reproducir environment.",
+      "files": ["(raíz del proyecto)"],
+      "impact": "No se puede desplegar. Breaking changes sin advertencia. Entorno no reproducible.",
+      "priority": 1,
+      "fix": "Crear requirements.txt con versiones pinned. Ej: opencv-python==4.8.1.78, numpy==1.24.3, ultralytics==8.0.x"
+    },
+    {
+      "id": "CRIT-003",
+      "severity": "BLOCKER",
+      "title": "video_processor.py + frame_processor.py: OpenCV hardcoded sin abstracción",
+      "description": "cv2.VideoCapture y cv2.cvtColor están hardcoded. Imposible testear unitariamente. Requiere video real y OpenCV en path.",
+      "files": ["pipeline/video_processor.py:263", "pipeline/frame_processor.py:513"],
+      "impact": "Tests son lentos, requieren recursos, no aislados. No se puede mockear.",
+      "priority": 2,
+      "fix": "Crear abstracciones: VideoReader (factory), ColorConverter (interface). Inyectar en constructores."
+    },
+    {
+      "id": "CRIT-004",
+      "severity": "BLOCKER",
+      "title": "logging.basicConfig() al nivel de módulo en video_splitter.py y validators.py",
+      "description": "Ambos archivos configuran logging globalmente en import time. Interfiere con otros módulos. Rompe encapsulación. Imposible de testear.",
+      "files": ["utils/video_splitter.py:25", "utils/validators.py:26"],
+      "impact": "Contaminación de logging global. Difícil de testear. Puede romper logging de aplicación cliente.",
+      "priority": 2,
+      "fix": "Remover logging.basicConfig(). Usar logger tradicional: logger = logging.getLogger(__name__)"
+    }
+  ],
+  "recommendations": {
+    "immediate_actions": [
+      {
+        "action": "Implementar _process_single_video()",
+        "estimated_effort": "4 horas",
+        "owner": "Pipeline Team",
+        "deadline": "Before production",
+        "description": "Reemplazar STUB con implementación real. Puede delegar a VideoProcessor o YOLO directamente."
+      },
+      {
+        "action": "Crear requirements.txt con versiones pinned",
+        "estimated_effort": "1 hora",
+        "owner": "DevOps/Lead",
+        "deadline": "Before deployment",
+        "description": "Documentar todas las dependencias con versiones: opencv-python==4.8.x, numpy==1.24.x, etc."
+      },
+      {
+        "action": "Remover logging.basicConfig() de módulos",
+        "estimated_effort": "30 minutos",
+        "owner": "Backend Team",
+        "deadline": "Before merge",
+        "description": "Cambiar a logger = logging.getLogger(__name__) en video_splitter.py y validators.py"
+      }
+    ],
+    "high_priority_refactoring": [
+      {
+        "area": "Testability",
+        "task": "Abstraer OpenCV en interfaces",
+        "files": ["video_processor.py", "frame_processor.py", "video_splitter.py"],
+        "description": "Crear VideoReaderInterface, ColorConverterInterface. Inyectar en constructores.",
+        "effort": "8 horas",
+        "benefit": "Unit tests sin dependencias de video real"
+      },
+      {
+        "area": "Configuration",
+        "task": "Hacer VALID_CLASSES configurable",
+        "files": ["frame_processor.py"],
+        "description": "Pasar VALID_CLASSES como parámetro en __init__ en lugar de hardcoded.",
+        "effort": "2 horas",
+        "benefit": "Flexibilidad para diferentes modelos YOLO"
+      },
+      {
+        "area": "Error Handling",
+        "task": "Mejorar manejo de None returns",
+        "files": ["file_handler.py", "result_combiner.py"],
+        "description": "Reemplazar Optional[T] con Result[T, Error] o custom exceptions.",
+        "effort": "4 horas",
+        "benefit": "Mejor manejo de errores, menos bugs"
+      }
+    ],
+    "best_practices_to_adopt": [
+      {
+        "practice": "Dependency Injection Factory",
+        "reason": "Para abstrae cv2.VideoCapture, cv2.VideoWriter",
+        "example": "Crear VideoReaderFactory que retorna VideoReader abstracción"
+      },
+      {
+        "practice": "Configuration Objects",
+        "reason": "Para VALID_CLASSES, chunk_duration, etc.",
+        "example": "ProcessingConfig ya lo hace bien. Seguir patrón."
+      },
+      {
+        "practice": "Type Hints Strict",
+        "reason": "Mejor IDE support y error catching",
+        "example": "Usar from typing import Protocol para abstracciones"
+      },
+      {
+        "practice": "Separation of Concerns",
+        "reason": "Video I/O separado de lógica de procesamiento",
+        "example": "VideoReader, FrameProcessor, DetectionValidator como separate concerns"
+      }
+    ]
+  },
+  "testing_strategy_recommendations": {
+    "unit_tests": {
+      "priority": "HIGH",
+      "current_state": "Difícil - OpenCV hardcoded",
+      "recommended_changes": [
+        "Mockeables: Detector, Tracker, TeamClassifier, Analyzer (ya lo son!)",
+        "Mockeable: VideoReader (crear abstracción)",
+        "Mockeable: FileHandler (ya lo es)",
+        "Testable: Validators (static methods, sin estado)",
+        "Testable: ResultCombiner (lógica pura)"
+      ],
+      "effort": "16 horas de refactoring para testability"
+    },
+    "integration_tests": {
+      "priority": "MEDIUM",
+      "current_state": "Posible con video de prueba",
+      "recommended_strategy": [
+        "Crear test_video.mp4 pequeño (10 frames, 320x240)",
+        "Test end-to-end: video → VideoProcessor → detecciones",
+        "Test batch: múltiples videos → BatchProcessor",
+        "Test file I/O: save/load JSON, CSV"
+      ]
+    },
+    "performance_tests": {
+      "priority": "MEDIUM",
+      "recommendations": [
+        "Benchmark: fps_processed en VideoProcessor",
+        "Benchmark: paralelización en BatchProcessor (4 workers)",
+        "Memory profiling: video_splitter.merge_chunks()",
+        "Metrics: avg processing_time_ms por frame"
+      ]
+    }
+  },
+  "code_quality_metrics": {
+    "lines_of_code": {
+      "pipeline": 1480,
+      "utils": 1508,
+      "total": 2988
+    },
+    "cyclomatic_complexity": {
+      "assessment": "MEDIUM - Algunos métodos tienen 3-4 branches",
+      "high_complexity_methods": [
+        "FrameProcessor.process_frame() - 5 branches",
+        "VideoValidator.validate_video_file() - 8 branches",
+        "DetectionValidator.validate_detection_output() - 6 branches"
+      ]
+    },
+    "code_duplication": {
+      "issues": [
+        "Logger setup repeated 3 veces (ScoutLogger, BatchProcessor, ResultCombiner)",
+        "cv2.VideoCapture.set/read pattern repeated en video_splitter.py",
+        "Error response creation repeated en validators.py"
+      ],
+      "recommendation": "Extraer a utility functions"
+    },
+    "documentation": {
+      "docstrings_coverage": "95% - Muy bien documentado",
+      "example_coverage": "80% - Mayoría de métodos tienen ejemplos",
+      "missing_docs": [
+        "VALID_CLASSES en FrameProcessor no está documentado como configurable",
+        "backup_dir en FileHandler no documentado",
+        "Relationship entre modules no documentado (ej: VideoProcessor → FrameProcessor)"
+      ]
+    }
+  },
+  "scoring_breakdown": {
+    "video_processor.py": {"overall": 74, "architecture": 78, "apis": 80, "testing": 60, "robustness": 80, "compatibility": 65},
+    "frame_processor.py": {"overall": 71, "architecture": 82, "apis": 82, "testing": 62, "robustness": 78, "compatibility": 65},
+    "batch_processor.py": {"overall": 58, "architecture": 72, "apis": 75, "testing": 55, "robustness": 72, "compatibility": 65},
+    "result_combiner.py": {"overall": 78, "architecture": 80, "apis": 82, "testing": 82, "robustness": 72, "compatibility": 85},
+    "logger.py": {"overall": 80, "architecture": 82, "apis": 85, "testing": 82, "robustness": 78, "compatibility": 90},
+    "file_handler.py": {"overall": 79, "architecture": 82, "apis": 78, "testing": 85, "robustness": 76, "compatibility": 90},
+    "video_splitter.py": {"overall": 72, "architecture": 78, "apis": 80, "testing": 60, "robustness": 76, "compatibility": 70},
+    "validators.py": {"overall": 76, "architecture": 80, "apis": 84, "testing": 75, "robustness": 74, "compatibility": 68}
+  },
+  "conclusion": {
+    "overall_assessment": "ACCEPTABLE WITH CRITICAL ISSUES - NOT READY FOR PRODUCTION",
+    "key_strengths": [
+      "Excellent architecture with clear separation of concerns",
+      "Strong use of design patterns (Factory, Facade, Strategy)",
+      "Comprehensive documentation with examples",
+      "Good error handling and logging",
+      "High code reusability"
+    ],
+    "key_weaknesses": [
+      "BLOCKER: Stub implementation in batch_processor",
+      "BLOCKER: No requirements.txt",
+      "BLOCKER: OpenCV hardcoded without abstraction",
+      "BLOCKER: logging.basicConfig() contamination",
+      "Major: Dependencies not versioned"
+    ],
+    "readiness_for_production": "60%",
+    "estimated_fixes_effort": "30-40 hours",
+    "next_steps": [
+      "Fix 5 critical issues immediately",
+      "Add requirements.txt",
+      "Implement batch_processor._process_single_video()",
+      "Refactor for testability (abstraction layer)",
+      "Add unit tests",
+      "Code review round 2"
+    ]
+  }
+}

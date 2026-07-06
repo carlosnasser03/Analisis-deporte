@@ -1,0 +1,409 @@
+{
+  "timestamp": "2026-07-06T13:35:00Z",
+  "project": "Scout AI - Sports Analysis Pipeline",
+  "version": "1.0",
+  "modules_created": [
+    {
+      "name": "frame_processor.py",
+      "location": "pipeline/frame_processor.py",
+      "type": "core_module",
+      "lines_of_code": 485,
+      "purpose": "Procesador de frames individuales del pipeline",
+      "description": "Maneja la detección, validación, tracking y extracción de características para frames individuales. Es el componente de bajo nivel que orquesta la procesamiento de un único frame.",
+      "main_class": "FrameProcessor",
+      "key_methods": [
+        {
+          "name": "process_frame",
+          "signature": "process_frame(frame: np.ndarray, frame_number: int, timestamp: float) -> FrameData",
+          "description": "Procesa un frame completo del pipeline (detect -> validate -> track -> extract features)",
+          "returns": "FrameData con detecciones y análisis"
+        },
+        {
+          "name": "detect_objects",
+          "signature": "detect_objects(frame: np.ndarray) -> List[Detection]",
+          "description": "Ejecuta la detección de objetos YOLO en el frame",
+          "returns": "Lista de detecciones sin validar"
+        },
+        {
+          "name": "validate_detections",
+          "signature": "validate_detections(detections: List[Detection], frame_shape: Tuple) -> List[Detection]",
+          "description": "Valida la calidad de detecciones basado en confianza, tamaño, límites, clase válida",
+          "returns": "Detecciones validadas"
+        },
+        {
+          "name": "track_objects",
+          "signature": "track_objects(detections: List[Detection]) -> List[Detection]",
+          "description": "Realiza tracking de objetos para mantener IDs consistentes en frames consecutivos",
+          "returns": "Detecciones con track_id asignados"
+        },
+        {
+          "name": "extract_features",
+          "signature": "extract_features(detections: List[Detection], frame: np.ndarray) -> List[Detection]",
+          "description": "Extrae características visuales de cada detección (color, histograma HSV, etc.)",
+          "returns": "Detecciones con características extraídas"
+        },
+        {
+          "name": "get_stats",
+          "signature": "get_stats() -> Dict[str, Any]",
+          "description": "Retorna estadísticas acumuladas de procesamiento",
+          "returns": "Diccionario con métricas de procesamiento"
+        }
+      ],
+      "data_structures": [
+        {
+          "name": "Detection",
+          "type": "dataclass",
+          "fields": [
+            "class_id: int",
+            "class_name: str",
+            "confidence: float",
+            "bbox: List[float]",
+            "center: Tuple[float, float]",
+            "area: float",
+            "quality_score: float",
+            "track_id: Optional[int]",
+            "features: Dict[str, Any]"
+          ],
+          "description": "Estructura para una detección individual de objeto"
+        },
+        {
+          "name": "FrameData",
+          "type": "dataclass",
+          "fields": [
+            "frame_number: int",
+            "timestamp: float",
+            "frame_shape: Tuple[int, int, int]",
+            "detections: List[Detection]",
+            "detections_raw_count: int",
+            "detections_valid_count: int",
+            "tracking_data: Dict[str, Any]",
+            "team_assignments: Dict[int, str]",
+            "analysis_results: Dict[str, Any]",
+            "processing_time_ms: float",
+            "errors: List[str]",
+            "warnings: List[str]"
+          ],
+          "description": "Estructura para datos procesados de un frame completo"
+        },
+        {
+          "name": "DetectionQuality",
+          "type": "enum",
+          "values": [
+            "HIGH = 3",
+            "MEDIUM = 2",
+            "LOW = 1",
+            "INVALID = 0"
+          ],
+          "description": "Enumeración de calidad de detecciones"
+        }
+      ],
+      "validation_criteria": {
+        "min_confidence": 0.3,
+        "min_detection_size": 10,
+        "max_detection_size": 2000,
+        "valid_classes": [
+          "0: player",
+          "1: ball",
+          "2: referee",
+          "3: pitch"
+        ]
+      },
+      "features_extracted": [
+        "Color promedio BGR",
+        "Histograma HSV (H, S, V)",
+        "Posición (x, y)",
+        "Área en píxeles",
+        "Score de calidad (0-1)"
+      ],
+      "integration_points": [
+        "BallDetector (core.detector)",
+        "PlayerDetector (core.detector)",
+        "ObjectTracker (tracking component)",
+        "TeamClassifier (core.team_classifier)",
+        "FeatureAnalyzer (analysis component)"
+      ],
+      "error_handling": {
+        "validation_on_frame": true,
+        "try_catch_all_operations": true,
+        "logging_enabled": true,
+        "statistics_tracking": true,
+        "graceful_degradation": true
+      }
+    },
+    {
+      "name": "video_processor.py",
+      "location": "pipeline/video_processor.py",
+      "type": "core_module",
+      "lines_of_code": 450,
+      "purpose": "Orquestador principal del pipeline",
+      "description": "Maneja el procesamiento completo de un video, coordinando la detección, tracking, clasificación de equipos y análisis. Es el componente de alto nivel que gestiona el flujo completo del pipeline.",
+      "main_class": "VideoProcessor",
+      "key_methods": [
+        {
+          "name": "process_video",
+          "signature": "process_video(video_path: str, output_path: Optional[str]) -> ProcessingResult",
+          "description": "Procesa un video completo ejecutando el pipeline en todos los frames",
+          "returns": "ProcessingResult con datos de todos los frames",
+          "features": [
+            "Lectura de video con OpenCV",
+            "Skip de frames configurable",
+            "Barra de progreso con tqdm",
+            "Procesamiento frame-by-frame",
+            "Recopilación de resultados",
+            "Guardado JSON opcional"
+          ]
+        },
+        {
+          "name": "process",
+          "signature": "process(video_path: str) -> ProcessingResult",
+          "description": "Alias para process_video()",
+          "returns": "ProcessingResult"
+        },
+        {
+          "name": "setup_detectors",
+          "signature": "setup_detectors() -> bool",
+          "description": "Inicializa y valida todos los detectores",
+          "returns": "True si configuración es válida"
+        },
+        {
+          "name": "get_results",
+          "signature": "get_results() -> Dict[str, Any]",
+          "description": "Retorna resultados del procesamiento",
+          "returns": "Diccionario con estadísticas y configuración"
+        },
+        {
+          "name": "reset",
+          "signature": "reset()",
+          "description": "Reinicia el estado del procesador",
+          "returns": "None"
+        },
+        {
+          "name": "create_default",
+          "signature": "create_default(detector_path: Optional[str], **kwargs) -> VideoProcessor",
+          "description": "Factory method para crear instancia con configuración por defecto",
+          "returns": "Instancia de VideoProcessor configurada",
+          "static": true
+        }
+      ],
+      "data_structures": [
+        {
+          "name": "ProcessingConfig",
+          "type": "dataclass",
+          "fields": [
+            "min_confidence: float = 0.3",
+            "skip_frames: int = 1",
+            "max_frames: Optional[int] = None",
+            "enable_tracking: bool = True",
+            "enable_team_classification: bool = True",
+            "enable_analysis: bool = True",
+            "save_intermediate: bool = False",
+            "output_dir: Optional[Path] = None"
+          ],
+          "description": "Configuración para el VideoProcessor"
+        },
+        {
+          "name": "ProcessingResult",
+          "type": "dataclass",
+          "fields": [
+            "video_path: str",
+            "total_frames: int",
+            "processed_frames: int",
+            "skipped_frames: int",
+            "frame_data: List[FrameData]",
+            "processing_stats: Dict[str, Any]",
+            "errors: List[str]",
+            "warnings: List[str]",
+            "total_time_seconds: float",
+            "fps_processed: float",
+            "timestamp: str"
+          ],
+          "description": "Resultado del procesamiento de video",
+          "methods": [
+            "to_dict() -> Dict",
+            "save_json(path: Path)"
+          ]
+        }
+      ],
+      "pipeline_stages": [
+        "1. Validar entrada (archivo existe, formato válido)",
+        "2. Validar detectores (setup_detectors)",
+        "3. Abrir video con OpenCV",
+        "4. Extraer propiedades (fps, resolución, total frames)",
+        "5. Procesar frames secuencialmente:",
+        "   - Skip frames si es necesario",
+        "   - Llamar frame_processor.process_frame()",
+        "   - Recopilar resultados",
+        "6. Calcular estadísticas finales",
+        "7. Guardar resultados JSON si aplica"
+      ],
+      "progress_tracking": {
+        "enabled": true,
+        "library": "tqdm",
+        "shows": [
+          "Porcentaje completado",
+          "Detecciones válidas por frame",
+          "Tiempo de procesamiento por frame",
+          "ETA"
+        ]
+      },
+      "statistics_collected": {
+        "per_video": [
+          "Total de frames",
+          "Frames procesados",
+          "Frames saltados",
+          "Total detecciones",
+          "Detecciones válidas",
+          "Errores encontrados",
+          "Tiempo total de procesamiento",
+          "FPS procesado"
+        ],
+        "aggregated": [
+          "Promedio detecciones por frame",
+          "Promedio detecciones válidas por frame",
+          "Tasa de error",
+          "Estadísticas del frame_processor"
+        ]
+      },
+      "integration_points": [
+        "FrameProcessor (frame_processor.py)",
+        "YOLO detector (ultralytics)",
+        "OpenCV (cv2)",
+        "tqdm (progress bar)",
+        "JSON (resultados)"
+      ],
+      "error_handling": {
+        "file_validation": true,
+        "detector_validation": true,
+        "try_catch_all_operations": true,
+        "logging_enabled": true,
+        "graceful_error_recovery": true,
+        "error_collection": true
+      }
+    }
+  ],
+  "module_relationships": {
+    "VideoProcessor": {
+      "uses": [
+        "FrameProcessor",
+        "ProcessingConfig",
+        "ProcessingResult"
+      ],
+      "coordinates": [
+        "detector",
+        "tracker",
+        "team_classifier",
+        "analyzer"
+      ],
+      "level": "high"
+    },
+    "FrameProcessor": {
+      "uses": [
+        "Detection",
+        "FrameData",
+        "DetectionQuality"
+      ],
+      "integrates_with": [
+        "detector",
+        "tracker",
+        "team_classifier",
+        "analyzer"
+      ],
+      "level": "low"
+    }
+  },
+  "dependencies": {
+    "external": [
+      "numpy (array operations)",
+      "opencv-python (video I/O, image processing)",
+      "ultralytics (YOLO detection)",
+      "tqdm (progress bars)",
+      "dataclasses (Python 3.7+)"
+    ],
+    "internal": [
+      "core.detector (BallDetector, PlayerDetector)",
+      "core.team_classifier (TeamClassifier)",
+      "Optional: tracking module",
+      "Optional: analysis module"
+    ]
+  },
+  "configuration_defaults": {
+    "min_confidence": 0.3,
+    "skip_frames": 1,
+    "max_frames": null,
+    "enable_tracking": true,
+    "enable_team_classification": true,
+    "enable_analysis": true,
+    "save_intermediate": false
+  },
+  "usage_examples": [
+    {
+      "title": "Procesamiento básico",
+      "code": "processor = VideoProcessor.create_default(detector_path='models/yolo.pt')\nresult = processor.process_video('video.mp4')"
+    },
+    {
+      "title": "Con configuración personalizada",
+      "code": "config = ProcessingConfig(skip_frames=2, max_frames=300)\nprocessor = VideoProcessor(detector=detector, config=config)\nresult = processor.process('video.mp4')"
+    },
+    {
+      "title": "Guardando resultados",
+      "code": "result = processor.process_video('input.mp4', output_path='results.json')\nprint(f'Procesados: {result.processed_frames} frames')"
+    },
+    {
+      "title": "Acceso a resultados",
+      "code": "results_dict = processor.get_results()\nprint(results_dict['stats'])\nfor frame_data in result.frame_data:\n    print(f'Frame {frame_data.frame_number}: {frame_data.detections_valid_count} detecciones')"
+    }
+  ],
+  "testing_checklist": [
+    {
+      "test": "Test de importación de módulos",
+      "status": "pending",
+      "description": "Verificar que ambos módulos se importan correctamente"
+    },
+    {
+      "test": "Test de procesamiento básico de frame",
+      "status": "pending",
+      "description": "Procesar un frame y validar estructura de FrameData"
+    },
+    {
+      "test": "Test de procesamiento de video",
+      "status": "pending",
+      "description": "Procesar un video pequeño y validar ProcessingResult"
+    },
+    {
+      "test": "Test de manejo de errores",
+      "status": "pending",
+      "description": "Validar manejo gracioso de errores en ambos módulos"
+    },
+    {
+      "test": "Test de validación de detecciones",
+      "status": "pending",
+      "description": "Validar que las detecciones se filtran correctamente"
+    },
+    {
+      "test": "Test de guardar resultados JSON",
+      "status": "pending",
+      "description": "Validar que se guarden correctamente los resultados"
+    }
+  ],
+  "next_steps": [
+    "Crear tests unitarios para ambos módulos",
+    "Integrar con detectores reales (BallDetector, PlayerDetector)",
+    "Implementar tracking real",
+    "Integrar con TeamClassifier real",
+    "Optimizar rendimiento (caché, batching)",
+    "Agregar visualización de resultados",
+    "Crear documentación de API completa"
+  ],
+  "summary": {
+    "total_modules": 2,
+    "total_lines_of_code": 935,
+    "main_classes": 5,
+    "data_structures": 6,
+    "methods_total": 16,
+    "docstrings": "100%",
+    "error_handling": "comprehensive",
+    "logging": "enabled",
+    "progress_tracking": "enabled",
+    "json_output": "supported"
+  }
+}

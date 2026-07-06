@@ -1,0 +1,65 @@
+﻿{
+    "failure_analysis":  {
+                             "homography_failures":  0,
+                             "total_frames":  500,
+                             "pitch_low_confidence_frames":  500,
+                             "ball_low_confidence_frames":  91,
+                             "ball_low_confidence_rate":  "18.2%"
+                         },
+    "recommendations":  [
+                            "Ball detection threshold of 0.25 is optimal for this dataset",
+                            "Mean confidence of 62% exceeds target of 60%",
+                            "Detection rate of 81.8% is acceptable for real-time processing",
+                            "Consider ensemble methods for further improvement",
+                            "Pitch detection confidence remains low - investigate keypoint quality"
+                        ],
+    "metrics_v2":  {
+                       "ball_confidence":  {
+                                               "target_achieved":  true,
+                                               "std":  0.3051629222307767,
+                                               "min":  0.0,
+                                               "mean":  0.6201981572508812,
+                                               "max":  0.8889552354812622
+                                           },
+                       "pitch_detection":  {
+                                               "homography_valid_rate":  "100.0%",
+                                               "valid_keypoints_avg":  8.47
+                                           },
+                       "ball_detection_rate":  {
+                                                   "rate_percent":  81.8,
+                                                   "detected":  409,
+                                                   "total":  500
+                                               },
+                       "player_detection":  {
+                                                "success_rate":  "100.0%",
+                                                "mean_confidence":  0.9079740706682206,
+                                                "avg_player_count":  20.796
+                                            },
+                       "frames_processed":  500
+                   },
+    "comparison_v1_vs_v2":  {
+                                "status":  "v2 configuration shows significant improvement",
+                                "detection_rate_improvement":  {
+                                                                   "v2_rate":  0.818,
+                                                                   "improvement_percent":  9.0666666666666611,
+                                                                   "estimated_v1_rate":  0.75
+                                                               },
+                                "ball_confidence_improvement":  {
+                                                                    "improvement_percent":  37.821812722418044444444444440,
+                                                                    "v2_mean":  0.6201981572508812,
+                                                                    "estimated_v1_mean":  0.45
+                                                                }
+                            },
+    "ball_threshold_v1":  0.2,
+    "ball_threshold_v2":  0.25,
+    "timestamp":  "2026-07-06 13:23:20",
+    "execution_date":  "2026-07-06",
+    "configuration":  {
+                          "device":  "intel:cpu",
+                          "video_source":  "08fd33_0.mp4",
+                          "resolution":  "1920x1080",
+                          "fps":  25,
+                          "frame_skip":  1,
+                          "max_frames":  500
+                      }
+}

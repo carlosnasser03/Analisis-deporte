@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout AI - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: oklch(0.55 0.15 240);
+            --color-primary-light: oklch(0.65 0.12 240);
+            --color-primary-dark: oklch(0.45 0.16 240);
+
+            --color-success: oklch(0.65 0.15 140);
+            --color-warning: oklch(0.70 0.15 70);
+            --color-error: oklch(0.60 0.18 20);
+
+            --color-bg: oklch(0.98 0 0);
+            --color-surface: oklch(0.95 0 0);
+            --color-border: oklch(0.88 0 0);
+            --color-text: oklch(0.15 0 0);
+            --color-text-muted: oklch(0.45 0 0);
+            --color-text-light: oklch(0.70 0 0);
+
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+
+            --radius-sm: 0.375rem;
+            --radius-md: 0.75rem;
+            --radius-lg: 1.25rem;
+
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-bg: oklch(0.12 0 0);
+                --color-surface: oklch(0.18 0 0);
+                --color-border: oklch(0.28 0 0);
+                --color-text: oklch(0.90 0 0);
+                --color-text-muted: oklch(0.65 0 0);
+                --color-text-light: oklch(0.55 0 0);
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .header-subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            background: var(--color-primary);
+            color: white;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-badge.warning {
+            background: var(--color-warning);
+        }
+
+        .status-badge.success {
+            background: var(--color-success);
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: var(--spacing-md);
+            border-bottom: 2px solid var(--color-border);
+            padding: 0 var(--spacing-xl);
+            max-width: 1400px;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+
+        .nav-tabs button {
+            background: none;
+            border: none;
+            padding: var(--spacing-md) 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .nav-tabs button:hover {
+            color: var(--color-text);
+        }
+
+        .nav-tabs button.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card-subtitle {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        }
+
+        /* Stat Card */
+        .stat-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: var(--spacing-md) 0;
+        }
+
+        .stat-label {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding: var(--spacing-lg) 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--color-border);
+        }
+
+        .timeline-item {
+            margin-bottom: var(--spacing-xl);
+            padding-left: var(--spacing-xl);
+            position: relative;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--color-primary);
+            border-radius: 50%;
+            border: 4px solid var(--color-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .timeline-item.completed .timeline-dot {
+            background: var(--color-success);
+        }
+
+        .timeline-item.warning .timeline-dot {
+            background: var(--color-warning);
+        }
+
+        .timeline-content h4 {
+            margin: 0 0 var(--spacing-xs) 0;
+            font-size: 1rem;
+        }
+
+        .timeline-content p {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        /* Progress Bar */
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: var(--color-border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin: var(--spacing-md) 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--color-primary);
+            border-radius: var(--radius-sm);
+            transition: width 0.3s ease;
+        }
+
+        .progress-bar.success {
+            background: var(--color-success);
+        }
+
+        /* Feature List */
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: var(--spacing-sm) 0;
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+
+        .feature-list li::before {
+            content: '✓';
+            color: var(--color-success);
+            font-weight: 700;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .feature-list li.pending::before {
+            content: '◯';
+            color: var(--color-text-light);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-border);
+        }
+
+        /* Architecture Diagram */
+        .architecture-box {
+            background: var(--color-surface);
+            border: 2px solid var(--color-primary);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin: var(--spacing-md) 0;
+            text-align: center;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .architecture-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: var(--spacing-lg) 0;
+            flex-wrap: wrap;
+            gap: var(--spacing-md);
+        }
+
+        .architecture-flow::after {
+            content: '→';
+            font-size: 1.5rem;
+            color: var(--color-text-light);
+        }
+
+        .architecture-flow:last-child::after {
+            display: none;
+        }
+
+        /* Data Grid */
+        .data-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin: var(--spacing-lg) 0;
+        }
+
+        .data-grid thead {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .data-grid th {
+            padding: var(--spacing-md);
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-grid td {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .data-grid tbody tr:hover {
+            background: var(--color-surface);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-md);
+            }
+
+            .nav-tabs {
+                padding: 0 var(--spacing-md);
+            }
+
+            .grid, .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+
+        /* Loading Animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <div class="header-title">⚽ Scout AI</div>
+                <div class="header-subtitle">Plataforma de Análisis Táctico para Academias de Fútbol</div>
+            </div>
+            <div class="status-badge warning">
+                <span>⏱️ Fase 1 en Progreso</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-tabs">
+        <button class="nav-btn active" data-tab="vision">📋 Visión</button>
+        <button class="nav-btn" data-tab="architecture">🏗️ Arquitectura</button>
+        <button class="nav-btn" data-tab="roadmap">🗺️ Roadmap</button>
+        <button class="nav-btn" data-tab="estado">📊 Estado</button>
+        <button class="nav-btn" data-tab="tech">⚙️ Tecnologías</button>
+    </div>
+
+    <div class="container">
+        <!-- SECCIÓN: VISIÓN -->
+        <section class="content-section active" id="vision">
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🎯</span>
+                        <div>
+                            <h3 class="card-title">Producto</h3>
+                            <p class="card-subtitle">Sistema inteligente de análisis</p>
+                        </div>
+                    </div>
+                    <p>Scout AI permite a padres de futbolistas jóvenes registrar el desempeño de sus hijos en partidos, obtener análisis profesionales y compartir reportes con otros equipos para conseguir becas o fichajes.</p>
+                    <div class="feature-list">
+                        <li>📹 Análisis automático de videos</li>
+                        <li>📊 Estadísticas detalladas por jugador</li>
+                        <li>📄 Reportes PDF profesionales</li>
+                        <li>🌐 Exportación JSON/CSV</li>
+                        <li>👥 Comparativa equipo</li>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">💰</span>
+                        <div>
+                            <h3 class="card-title">Monetización</h3>
+                            <p class="card-subtitle">Modelo Freemium</p>
+                        </div>
+                    </div>
+                    <div style="margin: var(--spacing-md) 0;">
+                        <div style="margin-bottom: var(--spacing-md);">
+                            <strong style="color: var(--color-text);">Premium: $49/mes</strong>
+                            <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Análisis ilimitado, reportes PDF, video anotado</p>
+                        </div>
+                        <div>
+                            <strong style="color: var(--color-text);">Académico: $299/mes</strong>
+                            <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-top: 0.25rem;">Para academias, múltiples jugadores, API</p>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 35%;"></div>
+                    </div>
+                    <p style="font-size: 0.875rem; color: var(--color-text-muted);">Ingresos estimados Year 1: $65k-225k</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📸</span>
+                    <div>
+                        <h3 class="card-title">Contexto de Grabación</h3>
+                        <p class="card-subtitle">Especificaciones técnicas</p>
+                    </div>
+                </div>
+                <div class="grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Ubicación</div>
+                        <div class="stat-value" style="font-size: 1.5rem;">Múltiples campos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ángulo</div>
+                        <div class="stat-value" style="font-size: 1.5rem;">60-80°</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Luz</div>
+                        <div class="stat-value" style="font-size: 1.5rem;">Natural (día)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Resolución</div>
+                        <div class="stat-value" style="font-size: 1.5rem;">1080p+</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">👥</span>
+                    <div>
+                        <h3 class="card-title">Mercado Objetivo</h3>
+                        <p class="card-subtitle">Usuarios finales</p>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">👨‍👩‍👦 Padres</h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-muted);">Registran progreso de hijos, comparten con scouts</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">🏫 Academias</h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-muted);">Analizan equipos, dan reportes a familias</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">🔍 Scouts</h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-muted);">Evalúan jugadores, datos objetivos</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">⚽ Otros Equipos</h4>
+                        <p style="font-size: 0.875rem; color: var(--color-text-muted);">Fichajes, becas, convenios</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ARQUITECTURA -->
+        <section class="content-section" id="architecture">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📦</span>
+                    <div>
+                        <h3 class="card-title">Estructura de Módulos</h3>
+                        <p class="card-subtitle">Arquitectura modular y escalable</p>
+                    </div>
+                </div>
+                <div style="font-family: monospace; background: var(--color-bg); padding: var(--spacing-lg); border-radius: var(--radius-md); line-height: 1.8; font-size: 0.85rem;">
+                    <div>📁 <strong>config/</strong> - Configuraciones centralizadas</div>
+                    <div>📁 <strong>core/</strong> - Módulos reutilizables</div>
+                    <div style="margin-left: 2rem;">├─ detector.py (YOLO wrapper)</div>
+                    <div style="margin-left: 2rem;">├─ team_classifier.py (Equipos)</div>
+                    <div style="margin-left: 2rem;">├─ tracker.py (Tracking)</div>
+                    <div style="margin-left: 2rem;">├─ player_analyzer.py (Análisis)</div>
+                    <div style="margin-left: 2rem;">└─ report_generator.py (Reportes)</div>
+                    <div>📁 <strong>pipeline/</strong> - Orquestación</div>
+                    <div style="margin-left: 2rem;">├─ video_processor.py</div>
+                    <div style="margin-left: 2rem;">├─ batch_processor.py</div>
+                    <div style="margin-left: 2rem;">└─ result_combiner.py</div>
+                    <div>📁 <strong>scripts/</strong> - Ejecutables CLI</div>
+                    <div>📁 <strong>models/</strong> - Modelos YOLO</div>
+                    <div>📁 <strong>data/</strong> - Inputs/outputs</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚙️</span>
+                    <div>
+                        <h3 class="card-title">Pipeline de Procesamiento</h3>
+                        <p class="card-subtitle">Flujo detallado</p>
+                    </div>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">1</div>
+                        <div class="timeline-content">
+                            <h4>Validación</h4>
+                            <p>Verificar formato, codec, duración del video</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">2</div>
+                        <div class="timeline-content">
+                            <h4>Detección</h4>
+                            <p>Cargar YOLO, detectar jugadores, cancha, balón</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">3</div>
+                        <div class="timeline-content">
+                            <h4>Clasificación</h4>
+                            <p>Separar por equipo, identificar números camiseta</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">4</div>
+                        <div class="timeline-content">
+                            <h4>Tracking</h4>
+                            <p>ByteTrack + validaciones, mantener IDs consistentes</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">5</div>
+                        <div class="timeline-content">
+                            <h4>Análisis</h4>
+                            <p>Calcular estadísticas por jugador, heatmaps</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">6</div>
+                        <div class="timeline-content">
+                            <h4>Reportes</h4>
+                            <p>Generar PDF, JSON, video anotado, dashboard HTML</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <div>
+                        <h3 class="card-title">Análisis por Jugador</h3>
+                        <p class="card-subtitle">Métricas que se generan</p>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">🏃 Movimiento</h4>
+                        <ul class="feature-list">
+                            <li>Distancia recorrida (km)</li>
+                            <li>Velocidad máxima (km/h)</li>
+                            <li>Velocidad promedio</li>
+                            <li>Intensidad (%)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">⚽ Balón</h4>
+                        <ul class="feature-list">
+                            <li>Toques al balón</li>
+                            <li>Posesión (% tiempo)</li>
+                            <li>Acierto en pases</li>
+                            <li>Pérdidas de balón</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">📍 Posicionamiento</h4>
+                        <ul class="feature-list">
+                            <li>Zona preferida</li>
+                            <li>Heatmap visual</li>
+                            <li>Cobertura defensiva</li>
+                            <li>Avance ofensivo</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--color-primary); margin-bottom: var(--spacing-sm);">📈 Comparativa</h4>
+                        <ul class="feature-list">
+                            <li>vs. equipo promedio</li>
+                            <li>vs. estándar posición</li>
+                            <li>vs. partido anterior</li>
+                            <li>Ranking equipo</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ROADMAP -->
+        <section class="content-section" id="roadmap">
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🗺️</span>
+                    <div>
+                        <h3 class="card-title">Plan de Implementación</h3>
+                        <p class="card-subtitle">14 semanas hasta MVP vendible</p>
+                    </div>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">1</div>
+                        <div class="timeline-content">
+                            <h4>FASE 1: Diagnóstico (Sem 1-2)</h4>
+                            <p>Validación de modelos actuales, identificación de debilidades, decisión de prioridades</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">2</div>
+                        <div class="timeline-content">
+                            <h4>FASE 2: Arquitectura (Sem 3-4)</h4>
+                            <p>Reorganizar código, crear módulos core, setup profesional</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">3</div>
+                        <div class="timeline-content">
+                            <h4>FASE 3: Procesamiento (Sem 5-6)</h4>
+                            <p>Pipeline completo, procesar video entero, optimización</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">4</div>
+                        <div class="timeline-content">
+                            <h4>FASE 4: Análisis (Sem 7-8)</h4>
+                            <p>Estadísticas por jugador, métricas avanzadas, exportación datos</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">5</div>
+                        <div class="timeline-content">
+                            <h4>FASE 5: Reportes (Sem 9-10)</h4>
+                            <p>PDF profesionales, HTML dashboard, video anotado</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">6</div>
+                        <div class="timeline-content">
+                            <h4>FASE 6: CLI (Sem 11-12)</h4>
+                            <p>Scripts ejecutables, interfaz usuario, documentación</p>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">7</div>
+                        <div class="timeline-content">
+                            <h4>FASE 7: Deploy (Sem 13-14)</h4>
+                            <p>Google Colab, Cloud setup, testing, listo para vender</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: var(--spacing-xl); padding: var(--spacing-lg); background: var(--color-primary); border-radius: var(--radius-md); color: white;">
+                    <h4 style="margin-bottom: var(--spacing-sm);">⚡ Velocidad de Procesamiento</h4>
+                    <div class="grid">
+                        <div>
+                            <div style="font-size: 2rem; font-weight: 700;">15h</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Tu PC (CPU)</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2rem; font-weight: 700;">5h</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Google Colab</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2rem; font-weight: 700;">2-3h</div>
+                            <div style="font-size: 0.875rem; opacity: 0.9;">Cloud GPU</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.875rem; margin-top: var(--spacing-md);">Para analizar 120 minutos de video (recomendado: Colab Pro $10/mes)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: ESTADO -->
+        <section class="content-section" id="estado">
+            <div class="grid grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📊</span>
+                        <div>
+                            <h3 class="card-title">Progreso General</h3>
+                            <p class="card-subtitle">Semana 1 de 14</p>
+                        </div>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 7%;"></div>
+                    </div>
+                    <div style="text-align: center; margin: var(--spacing-md) 0;">
+                        <span style="font-size: 2rem; font-weight: 700; color: var(--color-primary);">7%</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">✅</span>
+                        <div>
+                            <h3 class="card-title">Documentación</h3>
+                            <p class="card-subtitle">Completa y profesional</p>
+                        </div>
+                    </div>
+                    <ul class="feature-list">
+                        <li>PRODUCTO_VISION.md</li>
+                        <li>ARQUITECTURA_SISTEMA.md</li>
+                        <li>PLAN_IMPLEMENTACION.md</li>
+                        <li>FASE_1_INTERPRETACION.md</li>
+                        <li>ESTADO_PROYECTO.md</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🔍</span>
+                    <div>
+                        <h3 class="card-title">Resultados Diagnóstico REAL (Video: 08fd33_0)</h3>
+                        <p class="card-subtitle">200 frames procesados - Análisis completo</p>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="stat-card" style="border-left: 4px solid var(--color-success);">
+                        <div class="stat-label">🎯 Jugadores</div>
+                        <div class="stat-value" style="color: var(--color-success);">0.91</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: var(--spacing-xs);">Confianza: EXCELENTE ✓</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--color-warning);">
+                        <div class="stat-label">⚽ Balón</div>
+                        <div class="stat-value" style="color: var(--color-warning);">0.58</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: var(--spacing-xs);">Confianza: VARIABLE (21.5% fallos)</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--color-error);">
+                        <div class="stat-label">🏟️ Cancha</div>
+                        <div class="stat-value" style="color: var(--color-error);">0.27</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: var(--spacing-xs);">Confianza: CRÍTICA (100% fallos)</div>
+                    </div>
+                    <div class="stat-card" style="border-left: 4px solid var(--color-success);">
+                        <div class="stat-label">📐 Homografía</div>
+                        <div class="stat-value" style="color: var(--color-success);">100%</div>
+                        <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: var(--spacing-xs);">Transformación: VÁLIDA ✓</div>
+                    </div>
+                </div>
+
+                <div style="margin: var(--spacing-lg) 0; padding: var(--spacing-lg); background: linear-gradient(135deg, var(--color-error) 0%, rgba(var(--color-error), 0.1) 100%); border-radius: var(--radius-md); border-left: 4px solid var(--color-error);">
+                    <h4 style="color: var(--color-error); margin-bottom: var(--spacing-sm);">⚠️ CUELLO DE BOTELLA IDENTIFICADO</h4>
+                    <p style="margin: 0; font-size: 0.9rem;">El modelo de <strong>detección de cancha (pitch)</strong> es el principal limitante. Tiene 100% de tasa de fallo en este video.</p>
+                    <p style="margin: var(--spacing-sm) 0 0 0; font-size: 0.85rem; color: var(--color-text-muted);">Acción recomendada: Fine-tuning de football-pitch-detection.pt en FASE 3</p>
+                </div>
+
+                <div style="margin-top: var(--spacing-lg);">
+                    <h4 style="color: var(--color-text); margin-bottom: var(--spacing-md);">Detalle de Fallos</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-md);">
+                        <div style="padding: var(--spacing-md); background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-success);">
+                            <div style="font-weight: 600; color: var(--color-text);">Jugadores</div>
+                            <div style="font-size: 1.5rem; color: var(--color-success); margin: var(--spacing-xs) 0;">0%</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-muted);">0 frames con baja conf</div>
+                        </div>
+                        <div style="padding: var(--spacing-md); background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-warning);">
+                            <div style="font-weight: 600; color: var(--color-text);">Balón</div>
+                            <div style="font-size: 1.5rem; color: var(--color-warning); margin: var(--spacing-xs) 0;">21.5%</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-muted);">43 frames problemáticos</div>
+                        </div>
+                        <div style="padding: var(--spacing-md); background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-error);">
+                            <div style="font-weight: 600; color: var(--color-text);">Cancha</div>
+                            <div style="font-size: 1.5rem; color: var(--color-error); margin: var(--spacing-xs) 0;">100%</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-muted);">200 frames fallidos</div>
+                        </div>
+                        <div style="padding: var(--spacing-md); background: var(--color-bg); border-radius: var(--radius-md); border-left: 3px solid var(--color-success);">
+                            <div style="font-weight: 600; color: var(--color-text);">Homografía</div>
+                            <div style="font-size: 1.5rem; color: var(--color-success); margin: var(--spacing-xs) 0;">0%</div>
+                            <div style="font-size: 0.75rem; color: var(--color-text-muted);">0 frames inválidos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">💻</span>
+                    <div>
+                        <h3 class="card-title">Código Creado</h3>
+                        <p class="card-subtitle">Base sólida lista</p>
+                    </div>
+                </div>
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>Archivo</th>
+                            <th>Propósito</th>
+                            <th>Líneas</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>config/detection_config.yaml</code></td>
+                            <td>Configuración centralizada</td>
+                            <td>35</td>
+                            <td style="color: var(--color-success);">✓ Completo</td>
+                        </tr>
+                        <tr>
+                            <td><code>core/__init__.py</code></td>
+                            <td>Módulo importable</td>
+                            <td>5</td>
+                            <td style="color: var(--color-success);">✓ Completo</td>
+                        </tr>
+                        <tr>
+                            <td><code>core/metrics.py</code></td>
+                            <td>Sistema logging</td>
+                            <td>115</td>
+                            <td style="color: var(--color-success);">✓ Completo</td>
+                        </tr>
+                        <tr>
+                            <td><code>core/homography_validator.py</code></td>
+                            <td>Validador perspectiva</td>
+                            <td>160</td>
+                            <td style="color: var(--color-success);">✓ Completo</td>
+                        </tr>
+                        <tr>
+                            <td><code>scripts/0_validate_single.py</code></td>
+                            <td>Script diagnóstico</td>
+                            <td>330</td>
+                            <td style="color: var(--color-warning);">⏱️ En ejecución</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🔍</span>
+                    <div>
+                        <h3 class="card-title">Diagnóstico Actual</h3>
+                        <p class="card-subtitle">FASE 1 en progreso</p>
+                    </div>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">✓</div>
+                        <div class="timeline-content">
+                            <h4>Crear estructura carpetas</h4>
+                            <p>Config, core, scripts, data/logs</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">✓</div>
+                        <div class="timeline-content">
+                            <h4>Crear módulos core</h4>
+                            <p>metrics.py, homography_validator.py</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-dot">✓</div>
+                        <div class="timeline-content">
+                            <h4>Script diagnóstico</h4>
+                            <p>0_validate_single.py creado y en ejecución</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot loading">⏳</div>
+                        <div class="timeline-content">
+                            <h4>Procesar 500 frames</h4>
+                            <p>Analizando: player, ball, pitch, homografía</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item warning">
+                        <div class="timeline-dot">5</div>
+                        <div class="timeline-content">
+                            <h4>Generar reportes</h4>
+                            <p>single_summary.json, single_frames.csv, difficult_frames.txt</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🎯</span>
+                    <div>
+                        <h3 class="card-title">Próximos Pasos (Esta Semana)</h3>
+                        <p class="card-subtitle">Hoja de ruta</p>
+                    </div>
+                </div>
+                <ul class="feature-list">
+                    <li>Completar diagnóstico (500 frames)</li>
+                    <li>Analizar qué modelo es débil</li>
+                    <li>Decidir estrategia de mejora</li>
+                    <li>Comenzar FASE 2 - Arquitectura</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- SECCIÓN: TECNOLOGÍAS -->
+        <section class="content-section" id="tech">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🤖</span>
+                        <div>
+                            <h3 class="card-title">Machine Learning</h3>
+                            <p class="card-subtitle">Detección y análisis</p>
+                        </div>
+                    </div>
+                    <ul class="feature-list">
+                        <li><strong>YOLOv8</strong> - Detección objetos</li>
+                        <li><strong>OpenVINO</strong> - Optimización CPU/GPU</li>
+                        <li><strong>Supervision</strong> - Abstracción detecciones</li>
+                        <li><strong>ByteTrack</strong> - Tracking de objetos</li>
+                        <li><strong>scikit-learn</strong> - Clustering, análisis</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🎬</span>
+                        <div>
+                            <h3 class="card-title">Procesamiento Multimedia</h3>
+                            <p class="card-subtitle">Video e imágenes</p>
+                        </div>
+                    </div>
+                    <ul class="feature-list">
+                        <li><strong>OpenCV</strong> - Procesamiento video</li>
+                        <li><strong>NumPy</strong> - Operaciones numéricas</li>
+                        <li><strong>SciPy</strong> - Algoritmos científicos</li>
+                        <li><strong>Pillow</strong> - Manipulación imágenes</li>
+                        <li><strong>Pandas</strong> - Análisis datos</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📄</span>
+                        <div>
+                            <h3 class="card-title">Generación de Reportes</h3>
+                            <p class="card-subtitle">Salida profesional</p>
+                        </div>
+                    </div>
+                    <ul class="feature-list">
+                        <li><strong>ReportLab</strong> - PDF generation</li>
+                        <li><strong>Plotly</strong> - Gráficos interactivos</li>
+                        <li><strong>Jinja2</strong> - Templates HTML</li>
+                        <li><strong>JSON/CSV</strong> - Exportación datos</li>
+                        <li><strong>Matplotlib</strong> - Visualizaciones</li>
+                    </ul>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">☁️</span>
+                        <div>
+                            <h3 class="card-title">Infraestructura</h3>
+                            <p class="card-subtitle">Deployment</p>
+                        </div>
+                    </div>
+                    <ul class="feature-list">
+                        <li><strong>Google Colab</strong> - GPU gratis</li>
+                        <li><strong>AWS EC2</strong> - Cloud production</li>
+                        <li><strong>Google Cloud</strong> - Alternativa cloud</li>
+                        <li><strong>FastAPI/Flask</strong> - Web backend</li>
+                        <li><strong>PostgreSQL</strong> - Base datos (v2.0)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">⚙️</span>
+                    <div>
+                        <h3 class="card-title">Stack Completo</h3>
+                        <p class="card-subtitle">Python 3.9+</p>
+                    </div>
+                </div>
+                <div style="font-family: monospace; background: var(--color-bg); padding: var(--spacing-lg); border-radius: var(--radius-md); overflow-x: auto;">
+                    <div><strong>Core:</strong> Python 3.9+, pip</div>
+                    <div><strong>ML:</strong> ultralytics, supervision, opencv-python, numpy, scipy</div>
+                    <div><strong>Data:</strong> pandas, scikit-learn</div>
+                    <div><strong>Reports:</strong> reportlab, plotly, pillow</div>
+                    <div><strong>Config:</strong> pyyaml</div>
+                    <div><strong>Testing:</strong> pytest</div>
+                    <div><strong>Web (v2.0):</strong> fastapi, sqlalchemy, pydantic</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <div>
+                        <h3 class="card-title">Opciones de Procesamiento</h3>
+                        <p class="card-subtitle">Comparativa por contexto</p>
+                    </div>
+                </div>
+                <table class="data-grid">
+                    <thead>
+                        <tr>
+                            <th>Opción</th>
+                            <th>Velocidad (120min)</th>
+                            <th>Costo/mes</th>
+                            <th>Setup</th>
+                            <th>Para</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Local CPU</strong></td>
+                            <td>~15 horas</td>
+                            <td>$0</td>
+                            <td>✓ Fácil</td>
+                            <td>Desarrollo</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Colab Free</strong></td>
+                            <td>~5 horas</td>
+                            <td>$0</td>
+                            <td>Medio</td>
+                            <td>MVP</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Colab Pro</strong></td>
+                            <td>~2-3 horas</td>
+                            <td>$10</td>
+                            <td>✓ Fácil</td>
+                            <td>MVP ⭐</td>
+                        </tr>
+                        <tr>
+                            <td><strong>AWS/GCP</strong></td>
+                            <td>~2-3 horas</td>
+                            <td>$3-5/video</td>
+                            <td>Difícil</td>
+                            <td>Production</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Navegación entre tabs
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.content-section');
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remover clase active de todos
+                navBtns.forEach(b => b.classList.remove('active'));
+                sections.forEach(s => s.classList.remove('active'));
+
+                // Agregar clase active al clickeado
+                btn.classList.add('active');
+                const tabId = btn.dataset.tab;
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        // Smooth scroll
+        document.addEventListener('DOMContentLoaded', () => {
+            navBtns[0].click(); // Default tab
+        });
+    </script>
+</body>
+</html>

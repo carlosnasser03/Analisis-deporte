@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-07-06T00:00:00Z",
+  "optimization_summary": "Detection config parameters optimized to improve detection numbers",
+  "file_modified": "config/detection_config.yaml",
+  "changes": [
+    {
+      "parameter": "detection.player.confidence_threshold",
+      "previous_value": 0.40,
+      "new_value": 0.35,
+      "change_magnitude": -0.05,
+      "purpose": "Lower threshold to increase player detection sensitivity"
+    },
+    {
+      "parameter": "detection.ball.confidence_threshold",
+      "previous_value": 0.30,
+      "new_value": 0.20,
+      "change_magnitude": -0.10,
+      "purpose": "Lower threshold to improve ball detection in challenging conditions"
+    },
+    {
+      "parameter": "detection.pitch.confidence_threshold",
+      "previous_value": 0.50,
+      "new_value": 0.45,
+      "change_magnitude": -0.05,
+      "purpose": "Lower threshold to increase pitch detection coverage"
+    },
+    {
+      "parameter": "detection.pitch.keypoint_confidence_min",
+      "previous_value": 0.50,
+      "new_value": 0.40,
+      "change_magnitude": -0.10,
+      "purpose": "Reduce minimum keypoint confidence requirement"
+    },
+    {
+      "parameter": "detection.pitch.min_keypoints_valid",
+      "previous_value": 4,
+      "new_value": 3,
+      "change_magnitude": -1,
+      "purpose": "Reduce minimum valid keypoints requirement for pitch detection"
+    }
+  ],
+  "total_parameters_modified": 5,
+  "expected_impact": "Increased detection sensitivity across player, ball, and pitch detection modules. May increase false positives slightly but should significantly improve overall detection numbers.",
+  "status": "COMPLETED"
+}

@@ -1,0 +1,365 @@
+{
+  "metadata": {
+    "review_date": "2026-07-06",
+    "reviewer": "Claude Code - Professional Review Agent",
+    "phase": "FASE 2 - Arquitectura + Análisis Final",
+    "modules_reviewed": 5,
+    "total_lines_analyzed": 2060
+  },
+  "modules": {
+    "team_classifier.py": {
+      "lines": 251,
+      "status": "APROBADO CON CAMBIOS",
+      "score": 85,
+      "code_quality": {
+        "docstrings": "EXCELENTE - Google format completo en todas las clases y métodos",
+        "type_hints": "EXCELENTE - Type hints correctos en todos los métodos",
+        "naming_conventions": "EXCELENTE - snake_case consistente, métodos privados con _",
+        "organization": "EXCELENTE - Métodos privados separados, dataclass bien estructurada"
+      },
+      "functionality": {
+        "core_methods": "CORRECTO - train(), classify(), get_team_colors() funcionan como se especifica",
+        "error_handling": "BUENO - Try-except en _extract_player_color()",
+        "edge_cases": "PARCIAL - Validación de bbox correcta, pero falta validación de n_clusters en constructor"
+      },
+      "integration": {
+        "compatibility": "CORRECTO - Compatible con tracker.py y detector.py",
+        "dataclass_structure": "EXCELENTE - TeamColor dataclass bien definida",
+        "imports": "CORRECTO - Todos los imports necesarios presentes",
+        "exports": "VERIFICADO - Exportado en __init__.py"
+      },
+      "performance": {
+        "kmeans_config": "BUENO - n_init=10, random_state=42, max_iter=300 apropiado",
+        "memory_usage": "BUENO - Almacena solo lo necesario",
+        "numpy_usage": "EFICIENTE - np.linalg.norm y operaciones vectorizadas"
+      },
+      "security": {
+        "input_validation": "BUENO - Valida bbox dentro de límites",
+        "exception_handling": "BUENO - Retorna None en excepciones",
+        "file_handling": "N/A"
+      },
+      "critical_issues": [],
+      "warnings": [
+        "ADVERTENCIA: Línea 311 - normalize_factor de 300 es hardcoded en compare_colors(), debería ser configurable o dinámico",
+        "SUGERENCIA: El umbral de confianza 0.3 en línea 219 es hardcoded, considerar como parámetro"
+      ],
+      "recommendations": [
+        "Agregar validación de n_clusters >= 2 en __init__()",
+        "Hacer configurable el factor de normalización en compare_colors()",
+        "Documentar por qué el rango HSV es ±10/±30/±40 en líneas 155-156"
+      ]
+    },
+    "tracker.py": {
+      "lines": 307,
+      "status": "APROBADO",
+      "score": 88,
+      "code_quality": {
+        "docstrings": "EXCELENTE - Google format en todas las clases y métodos",
+        "type_hints": "EXCELENTE - Completos y correctos",
+        "naming_conventions": "EXCELENTE - Consistente snake_case",
+        "organization": "EXCELENTE - TrackState dataclass muy bien estructurada"
+      },
+      "functionality": {
+        "core_methods": "EXCELENTE - track(), get_tracks(), get_track_by_id() correctos",
+        "iou_calculation": "CORRECTO - IoU cálculo válido, maneja división por cero",
+        "occlusion_detection": "BUENO - Usa IoU y tiempo sin update",
+        "velocity_estimation": "CORRECTO - Usa últimos 5 frames para suavizar"
+      },
+      "integration": {
+        "compatibility": "EXCELENTE - Compatible con team_classifier.py, jersey_number_detector.py",
+        "dataclass_structure": "EXCELENTE - TrackState completa y extensible",
+        "imports": "CORRECTO",
+        "exports": "VERIFICADO - Exportado en __init__.py"
+      },
+      "performance": {
+        "memory_management": "EXCELENTE - max_lost_tracks=100 límite apropiado",
+        "position_history": "EXCELENTE - Limitado a 50 frames (línea 231)",
+        "distance_calculations": "EFICIENTE - np.sqrt con linalg.norm"
+      },
+      "security": {
+        "input_validation": "BUENO - Valida índices y longitudes",
+        "exception_handling": "BUENO - Maneja caso de lista vacía",
+        "state_consistency": "BUENO - update() mantiene coherencia de estado"
+      },
+      "critical_issues": [],
+      "warnings": [
+        "ADVERTENCIA: Línea 177 - Condición 'time_since_update > 5' para oclusión podría generar falsos positivos en movimiento rápido"
+      ],
+      "recommendations": [
+        "Considerar IoU mínimo configurable (actualmente 0.3 en línea 212)",
+        "Documentar significado de hit_streak vs hits (ambos incrementados en línea 222-223)"
+      ]
+    },
+    "jersey_number_detector.py": {
+      "lines": 332,
+      "status": "APROBADO CON CAMBIOS",
+      "score": 82,
+      "code_quality": {
+        "docstrings": "EXCELENTE - Google format completo",
+        "type_hints": "EXCELENTE - Correctos en todos los métodos",
+        "naming_conventions": "EXCELENTE - Consistente",
+        "organization": "EXCELENTE - Buen manejo de fallbacks y excepciones"
+      },
+      "functionality": {
+        "ocr_selection": "EXCELENTE - Fallback correcto: PaddleOCR -> EasyOCR -> None",
+        "region_extraction": "BUENO - Extrae zona del torso correctamente",
+        "preprocessing": "BUENO - CLAHE, adaptive thresholding apropiados",
+        "number_validation": "EXCELENTE - Validación 0-99 correcta"
+      },
+      "integration": {
+        "compatibility": "CORRECTO - Compatible con tracker.py",
+        "dataclass_structure": "EXCELENTE - JerseyDetectionResult bien definida",
+        "imports": "CORRECTO - Maneja imports opcionales",
+        "exports": "VERIFICADO - Exportado en __init__.py"
+      },
+      "performance": {
+        "ocr_performance": "BUENO - Stats bien rastreadas",
+        "preprocessing_speed": "ACEPTABLE - Resize x2 y CLAHE son operaciones estándar"
+      },
+      "security": {
+        "input_validation": "BUENO - Valida bbox y límites de frame",
+        "empty_region_handling": "CORRECTO - Detecta regiones vacías",
+        "exception_handling": "BUENO - Try-except alrededor de OCR"
+      },
+      "critical_issues": [],
+      "warnings": [
+        "ADVERTENCIA: Línea 95 - Parámetro region_height=0.6 es float pero no se valida si está en [0,1]",
+        "ADVERTENCIA: Línea 159-161 - Factor de resize x2 es hardcoded, no configurable",
+        "ADVERTENCIA: Línea 164 - CLAHE con tileGridSize=(8,8) y clipLimit=3.0 son hardcoded"
+      ],
+      "recommendations": [
+        "Agregar validación: assert 0 < region_height <= 1 en extract_number_region()",
+        "Hacer configurable el factor de preprocessing (resize, CLAHE parameters)",
+        "Documentar razón de 15% offset en línea 125 (region_y1 = y1 + int(bbox_height * 0.15))"
+      ]
+    },
+    "player_analyzer.py": {
+      "lines": 545,
+      "status": "APROBADO CON CAMBIOS",
+      "score": 80,
+      "code_quality": {
+        "docstrings": "EXCELENTE - Documentación muy completa con ejemplos",
+        "type_hints": "EXCELENTE - Completos y correctos",
+        "naming_conventions": "EXCELENTE - Constantes bien nombradas (VELOCITY_THRESHOLD_*)",
+        "organization": "EXCELENTE - Métodos auxiliares privados bien estructurados"
+      },
+      "functionality": {
+        "distance_calculation": "BUENO - Interpola frames faltantes y filtra outliers",
+        "velocity_calculation": "CORRECTO - Suavizado con ventana móvil",
+        "intensity_analysis": "PARCIAL - Ver ISSUE crítico abajo",
+        "heatmap_generation": "CORRECTO - Grid bien calculado"
+      },
+      "integration": {
+        "compatibility": "CORRECTO - Compatible con tracker.py y report_generator.py",
+        "dataclass_structure": "EXCELENTE - PlayerStats completa",
+        "team_comparison": "CORRECTO - Usa percentiles correctamente"
+      },
+      "performance": {
+        "interpolation": "ACEPTABLE - max_gap=10 es razonable pero podría optimizarse",
+        "vectorization": "BUENO - Usa numpy para cálculos en lote"
+      },
+      "security": {
+        "input_validation": "PARCIAL - Falta validación de field dimensions",
+        "exception_handling": "BUENO - Maneja arrays vacíos"
+      },
+      "critical_issues": [
+        "CRÍTICO - Línea 365 (calculate_intensity): hsrs_distance_m está INCORRECTAMENTE calculado. Actualmente suma velocidades: 'np.sum(velocities_array[hsrs_mask]) * frame_duration_s'. Debería ser distancia real: calcular frame-a-frame la distancia recorrida a velocidad > 6m/s",
+        "CRÍTICO - Línea 144-145: Si pixels_per_meter no está calibrado, lanza ValueError. Debería tener valor por defecto (ej: None con fallback a None y retornar 0 o estimar)"
+      ],
+      "warnings": [
+        "ADVERTENCIA: Línea 504 - Usa deprecated numpy.percentileofscore() sin importarlo de scipy.stats, debería ser: from scipy.stats import percentileofscore"
+      ],
+      "recommendations": [
+        "URGENTE: Corregir cálculo de hsrs_distance_m en calculate_intensity()",
+        "URGENTE: Documentar o proporcionar función para calibrar pixels_per_meter si no se proporciona",
+        "Agregar validación: assert field_length_m > 0 and field_width_m > 0",
+        "Considerar caching de resultados si se llama calculate_* múltiples veces con mismos datos"
+      ]
+    },
+    "report_generator.py": {
+      "lines": 625,
+      "status": "APROBADO",
+      "score": 87,
+      "code_quality": {
+        "docstrings": "EXCELENTE - Documentación completa y profesional",
+        "type_hints": "EXCELENTE - Completos en todos los métodos",
+        "naming_conventions": "EXCELENTE - Muy consistente",
+        "organization": "EXCELENTE - Constantes bien organizadas, métodos temáticamente agrupados"
+      },
+      "functionality": {
+        "pdf_generation": "CORRECTO - Genera PDFs válidos con ReportLab",
+        "html_dashboard": "CORRECTO - Crea dashboards interactivos con Plotly",
+        "csv_export": "CORRECTO - Maneja tipos complejos con json.dumps",
+        "json_export": "CORRECTO - Usa default=str para tipos no serializables"
+      },
+      "integration": {
+        "dependency_handling": "EXCELENTE - Maneja ReportLab y Plotly como opcionales",
+        "path_handling": "EXCELENTE - Usa pathlib.Path para seguridad multiplataforma",
+        "output_management": "CORRECTO - Crea directorio con parents=True"
+      },
+      "performance": {
+        "memory_usage": "BUENO - No carga todo en memoria",
+        "file_io": "BUENO - Escritura directa a disco"
+      },
+      "security": {
+        "input_validation": "CORRECTO - Valida data no vacía",
+        "encoding": "EXCELENTE - UTF-8 especificado",
+        "path_traversal": "SEGURO - pathlib.Path previene ataques"
+      },
+      "critical_issues": [],
+      "warnings": [
+        "NOTA: Línea 100-103 - Los warnings de dependencias faltantes se imprimen al inicializar, considera usar logging en lugar de print()"
+      ],
+      "recommendations": [
+        "Agregar parámetro de configuración para PERFORMANCE_THRESHOLDS en lugar de hardcoded",
+        "Considerar usar logging module en lugar de print() para advertencias",
+        "export_player_stats_csv() (línea 606-651) - hacer fieldnames configurable en lugar de hardcoded"
+      ]
+    }
+  },
+  "integration_analysis": {
+    "module_dependencies": {
+      "team_classifier": ["detector.py (BallDetector)"],
+      "tracker": ["team_classifier (team_id)", "jersey_number_detector (jersey_number)"],
+      "jersey_number_detector": ["tracker (track_id, bbox)"],
+      "player_analyzer": ["tracker (position history)", "report_generator (output)"],
+      "report_generator": ["player_analyzer (PlayerStats)"]
+    },
+    "dataclass_compatibility": "EXCELENTE - Todas las dataclasses son serializables y compatibles",
+    "type_hint_consistency": "EXCELENTE - Tipos consistentes entre módulos",
+    "import_structure": "CORRECTO - core/__init__.py exporta todos los módulos correctamente"
+  },
+  "summary": {
+    "overall_score": 84,
+    "verdict": "APROBADO CON CAMBIOS RECOMENDADOS",
+    "code_quality_average": 87,
+    "functionality_average": 82,
+    "integration_average": 88,
+    "performance_average": 85,
+    "security_average": 83,
+    "critical_issues_count": 2,
+    "warnings_count": 8,
+    "recommendations_count": 15
+  },
+  "critical_findings": [
+    {
+      "module": "player_analyzer.py",
+      "line": 365,
+      "severity": "CRÍTICO",
+      "issue": "Cálculo incorrecto de hsrs_distance_m",
+      "description": "La línea 365 suma velocidades en lugar de distancia: 'np.sum(velocities_array[hsrs_mask]) * frame_duration_s'. Esto retorna una suma de velocidades, no distancia recorrida.",
+      "fix": "Calcular frame-a-frame la distancia real para frames donde velocidad > 6m/s",
+      "impact": "HIGH - Métrica de distancia en alta intensidad será incorrecta"
+    },
+    {
+      "module": "player_analyzer.py",
+      "line": "144-145",
+      "severity": "CRÍTICO",
+      "issue": "Calibración obligatoria de pixels_per_meter",
+      "description": "El método calculate_distance() lanza ValueError si pixels_per_meter no está calibrado. Debería tener mecanismo de fallback o valor por defecto.",
+      "fix": "Proporcionar estimación por defecto o permitir cálculos sin calibración",
+      "impact": "MEDIUM - Requiere calibración previa siempre"
+    }
+  ],
+  "warnings": [
+    {
+      "module": "team_classifier.py",
+      "line": 311,
+      "issue": "Hardcoded normalization factor",
+      "suggestion": "Hacer 300 configurable en compare_colors()"
+    },
+    {
+      "module": "jersey_number_detector.py",
+      "line": 95,
+      "issue": "Falta validación de región_height",
+      "suggestion": "Validar que región_height esté en (0, 1]"
+    },
+    {
+      "module": "jersey_number_detector.py",
+      "line": "159-161",
+      "issue": "Factor de preprocessing hardcoded",
+      "suggestion": "Hacer el resize factor configurable"
+    },
+    {
+      "module": "tracker.py",
+      "line": 177,
+      "issue": "Oclusión podría detectarse falsa",
+      "suggestion": "Considerar condición más robusta para oclusión"
+    },
+    {
+      "module": "player_analyzer.py",
+      "line": 504,
+      "issue": "numpy.percentileofscore() no importado de scipy",
+      "suggestion": "from scipy.stats import percentileofscore"
+    },
+    {
+      "module": "report_generator.py",
+      "line": "100-103",
+      "issue": "Usar print() en lugar de logging",
+      "suggestion": "Usar logging module para advertencias"
+    },
+    {
+      "module": "report_generator.py",
+      "line": 623,
+      "issue": "PERFORMANCE_THRESHOLDS hardcoded",
+      "suggestion": "Hacer configurable en constructor"
+    },
+    {
+      "module": "report_generator.py",
+      "line": "623-648",
+      "issue": "Fieldnames hardcoded en export_player_stats_csv()",
+      "suggestion": "Parámetro configurable"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRÍTICA",
+      "recommendation": "Corregir cálculo de hsrs_distance_m en player_analyzer.py línea 365"
+    },
+    {
+      "priority": "CRÍTICA",
+      "recommendation": "Añadir fallback o valor por defecto para pixels_per_meter en player_analyzer.py"
+    },
+    {
+      "priority": "ALTA",
+      "recommendation": "Importar correctamente percentileofscore desde scipy.stats"
+    },
+    {
+      "priority": "ALTA",
+      "recommendation": "Hacer valores hardcoded configurables (región_height, resize factor, CLAHE params)"
+    },
+    {
+      "priority": "MEDIA",
+      "recommendation": "Usar logging en lugar de print() en report_generator.py"
+    },
+    {
+      "priority": "MEDIA",
+      "recommendation": "Agregar validaciones de rango para parámetros flotantes (region_height, confidence)"
+    },
+    {
+      "priority": "MEDIA",
+      "recommendation": "Documentar constantes mágicas (offsets como 15%, factores de normalización)"
+    }
+  ],
+  "code_review_final": {
+    "architecture": "EXCELENTE - Modular y bien separado",
+    "code_standards": "EXCELENTE - Docstrings, type hints, naming consistentes",
+    "reliability": "BUENO - Manejo de errores, pero 2 issues críticos detectados",
+    "maintainability": "EXCELENTE - Código claro y bien documentado",
+    "testability": "BUENO - Métodos públicos bien definidos",
+    "scalability": "BUENO - Estructura permite extensión"
+  },
+  "conclusion": {
+    "status": "APROBADO CON CAMBIOS RECOMENDADOS",
+    "ready_for_production": false,
+    "estimated_fix_time_hours": 4,
+    "next_steps": [
+      "URGENTE: Corregir bug crítico en player_analyzer.py (hsrs_distance_m)",
+      "URGENTE: Añadir manejo de pixels_per_meter no calibrado",
+      "Refactorizar valores hardcoded a configurables",
+      "Importar scipy.stats correctamente",
+      "Ejecutar suite de tests después de correcciones",
+      "Redeploy a staging para validación"
+    ]
+  }
+}

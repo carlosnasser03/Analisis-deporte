@@ -1,0 +1,35 @@
+Frames difíciles para 121364_0
+==================================================
+
+Frame    34 | Conf: 0.42 | low_ball_conf+low_pitch_conf
+Frame    42 | Conf: 0.42 | low_ball_conf+low_pitch_conf
+Frame    46 | Conf: 0.42 | low_ball_conf+low_pitch_conf
+Frame    48 | Conf: 0.42 | low_ball_conf+low_pitch_conf
+Frame    60 | Conf: 0.42 | low_ball_conf+low_pitch_conf
+Frame    68 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame    70 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame    72 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame    74 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame    78 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame    80 | Conf: 0.39 | low_ball_conf+low_pitch_conf
+Frame    82 | Conf: 0.40 | low_ball_conf+low_pitch_conf
+Frame   112 | Conf: 0.39 | low_ball_conf+low_pitch_conf
+Frame   212 | Conf: 0.39 | low_ball_conf+low_pitch_conf
+Frame   214 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame   216 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame   218 | Conf: 0.41 | low_ball_conf+low_pitch_conf
+Frame   248 | Conf: 0.44 | low_ball_conf+low_pitch_conf
+Frame   252 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   254 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   256 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   290 | Conf: 0.47 | low_ball_conf+low_pitch_conf
+Frame   318 | Conf: 0.47 | low_ball_conf+low_pitch_conf
+Frame   334 | Conf: 0.47 | low_ball_conf+low_pitch_conf
+Frame   348 | Conf: 0.46 | low_ball_conf+low_pitch_conf
+Frame   350 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   360 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   364 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   366 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   372 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   376 | Conf: 0.45 | low_ball_conf+low_pitch_conf
+Frame   388 | Conf: 0.45 | low_ball_conf+low_pitch_conf

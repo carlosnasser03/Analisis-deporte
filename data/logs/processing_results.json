@@ -1,0 +1,93 @@
+{
+  "execution_timestamp": "2026-07-07T13:00:54Z",
+  "script_executed": "scripts/0_validate_single.py",
+  "parameters": {
+    "skip_frames": 1,
+    "max_frames": 500
+  },
+  "status": "completed_successfully",
+  "output_files": {
+    "optimized_single_frames": "data/logs/optimized_single_frames.csv",
+    "optimized_single_summary": "data/logs/optimized_single_summary.json",
+    "original_frames": "data/logs/single_frames.csv",
+    "original_summary": "data/logs/single_summary.json",
+    "difficult_frames": "data/logs/single_difficult_frames.txt"
+  },
+  "processing_metrics": {
+    "total_frames_processed": 500,
+    "player_detection": {
+      "mean_confidence": 0.9079740706682206,
+      "min_confidence": 0.8416597247123718,
+      "max_confidence": 0.925887942314148,
+      "std_deviation": 0.014465699558812137,
+      "average_count": 20.796,
+      "low_confidence_failures": 0,
+      "failure_rate": "0.0%"
+    },
+    "ball_detection": {
+      "mean_confidence": 0.6201981572508812,
+      "min_confidence": 0.0,
+      "max_confidence": 0.8889552354812622,
+      "std_deviation": 0.3051629222307767,
+      "low_confidence_failures": 91,
+      "failure_rate": "18.2%"
+    },
+    "pitch_detection": {
+      "mean_confidence": 0.27796644896268846,
+      "min_confidence": 0.21079790592193604,
+      "max_confidence": 0.40850579738616943,
+      "std_deviation": 0.05276377364760268,
+      "mean_valid_keypoints": 8.47,
+      "min_valid_keypoints": 6.0,
+      "max_valid_keypoints": 13.0,
+      "low_confidence_failures": 500,
+      "failure_rate": "100.0%"
+    },
+    "homography_validation": {
+      "valid_count": 500,
+      "invalid_count": 0,
+      "validity_rate": "100.0%"
+    },
+    "team_classification": {
+      "succeeded": 0,
+      "failed": 500,
+      "failure_rate": "100.0%"
+    }
+  },
+  "summary": {
+    "strengths": [
+      "Excellent player detection with 90.8% mean confidence",
+      "Perfect homography validation rate at 100%",
+      "Low variance in player count detection (std: 0.92)",
+      "Consistent pitch keypoint detection"
+    ],
+    "weaknesses": [
+      "Pitch confidence too low (27.8% mean)",
+      "Complete team classification failure rate",
+      "Ball detection unreliable (18.2% failure rate)",
+      "Low mean confidence for ball tracking (62.0%)"
+    ],
+    "recommendations": [
+      "Investigate pitch detection model - consider retraining or parameter tuning",
+      "Review team classification logic - currently non-functional",
+      "Improve ball detection model - add more training data or adjust confidence threshold",
+      "Consider ensemble methods for more robust multi-task detection"
+    ]
+  },
+  "performance_notes": {
+    "max_frames_parameter": "Set to 500 frames for optimized analysis",
+    "frame_skip_parameter": "Set to 1 (process every frame)",
+    "processing_strategy": "Sequential single-video validation with real-time console output",
+    "device_used": "Intel CPU",
+    "models_loaded": [
+      "football-player-detection.pt",
+      "football-pitch-detection.pt",
+      "football-ball-detection.pt"
+    ]
+  },
+  "timestamp_details": {
+    "start_time": "2026-07-07T13:00:54Z",
+    "end_time": "2026-07-07T13:00:54Z",
+    "duration_seconds": "variable"
+  }
+}

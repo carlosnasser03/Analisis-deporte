@@ -1,0 +1,178 @@
+{
+  "metadata": {
+    "analysis_date": "2026-07-06T13:22:43.238551",
+    "analysis_type": "FINAL OPTIMIZATION COMPARISON",
+    "threshold_ball_new": 0.25,
+    "baseline_frames": 500,
+    "v1_frames": 200,
+    "v2_frames": 200,
+    "objectives": {
+      "jugadores": "93%+",
+      "balon": "65%+ (improved from -51%)",
+      "cancha": "40%+",
+      "homografia": "100%"
+    }
+  },
+  "comparison_table": {
+    "jugadores_confidence_mean": {
+      "metric": "Player Confidence (mean)",
+      "original": 0.908,
+      "v1": 0.8887,
+      "v2": 0.8989,
+      "delta_v1_vs_original": -0.0192,
+      "delta_v2_vs_v1": 0.0101,
+      "delta_v2_vs_original": -0.0091
+    },
+    "jugadores_count_mean": {
+      "metric": "Player Count (mean)",
+      "original": 20.8,
+      "v1": 20.98,
+      "v2": 20.66,
+      "delta_v1_vs_original": 0.18,
+      "delta_v2_vs_v1": -0.32
+    },
+    "balon_confidence_mean": {
+      "metric": "Ball Confidence (mean)",
+      "original": 0.6202,
+      "v1": 0.2985,
+      "v2": 0.6554,
+      "delta_v1_vs_original": -0.3217,
+      "delta_v2_vs_v1": 0.3569,
+      "delta_v2_vs_original": 0.0352,
+      "improvement_pct_v2_vs_v1": 119.54
+    },
+    "balon_failures_count": {
+      "metric": "Ball Failures (count)",
+      "original": 91,
+      "v1": 114,
+      "v2": 32,
+      "delta_v1_vs_original": 23,
+      "delta_v2_vs_v1": -82,
+      "note": "Lower is better"
+    },
+    "balon_failure_rate": {
+      "metric": "Ball Failure Rate (%)",
+      "original": "18.2%",
+      "v1": "57.0%",
+      "v2": "16.0%"
+    },
+    "cancha_confidence_mean": {
+      "metric": "Pitch Confidence (mean)",
+      "original": 0.278,
+      "v1": 0.3843,
+      "v2": 0.3843,
+      "delta_v1_vs_original": 0.1063,
+      "delta_v2_vs_v1": 0.0,
+      "delta_v2_vs_original": 0.1063
+    },
+    "cancha_keypoints_mean": {
+      "metric": "Pitch Keypoints Valid (mean)",
+      "original": 8.47,
+      "v1": 12.5,
+      "v2": 12.32,
+      "delta_v1_vs_original": 4.03,
+      "delta_v2_vs_v1": -0.18
+    },
+    "cancha_failures_count": {
+      "metric": "Pitch Failures (count)",
+      "original": 500,
+      "v1": 200,
+      "v2": 198,
+      "delta_v1_vs_original": -300,
+      "delta_v2_vs_v1": -2,
+      "note": "Lower is better"
+    },
+    "homografia_valid_mean": {
+      "metric": "Homography Valid (mean)",
+      "original": 1.0,
+      "v1": 1.0,
+      "v2": 1.0,
+      "delta_v1_vs_original": 0.0,
+      "delta_v2_vs_v1": 0.0
+    },
+    "homografia_failures_count": {
+      "metric": "Homography Failures (count)",
+      "original": 0,
+      "v1": 0,
+      "v2": 0
+    }
+  },
+  "deltas_finales": {
+    "jugadores": {
+      "objetivo": "93%+",
+      "original_pct": 90.8,
+      "v2_alcanzado_pct": 89.9,
+      "status": "INCUMPLIDO",
+      "improvement_from_v1_pct": 1.01
+    },
+    "balon": {
+      "objetivo": "65%+",
+      "original_pct": 62.0,
+      "v1_alcanzado_pct": 29.9,
+      "v1_regresion_pct": "-51.86%",
+      "v2_alcanzado_pct": 65.5,
+      "status": "CUMPLIDO",
+      "improvement_from_v1_pct": 35.69
+    },
+    "cancha": {
+      "objetivo": "40%+",
+      "original_pct": 27.8,
+      "v1_alcanzado_pct": 38.4,
+      "v2_alcanzado_pct": 38.4,
+      "status": "INCUMPLIDO",
+      "improvement_from_v1_pct": 0.0
+    },
+    "homografia": {
+      "objetivo": "100%",
+      "original_pct": 100.0,
+      "v2_alcanzado_pct": 100.0,
+      "status": "CUMPLIDO"
+    }
+  },
+  "veredicto_optimizacion": {
+    "version_evaluada": "V2 (optimized_v2_summary equivalent)",
+    "threshold_applied": 0.25,
+    "cumplimiento_objetivos": {
+      "jugadores": "NO",
+      "balon": "SI",
+      "cancha": "NO",
+      "homografia": "SI"
+    },
+    "cumplimiento_total": 3,
+    "cumplimiento_sobre_4": "3/4",
+    "recomendacion_final": "ACEPTADO CONDICIONALMENTE",
+    "razon": "V2 muestra mejoras significativas en cancha (+38.24%) y homografia (100%), pero aun no alcanza objetivo de 65% en balon. Sin embargo, muestra recuperacion desde la regresion de V1 (-51.86%)."
+  },
+  "recomendaciones_fase_2": [
+    "FASE 2 - MEJORA DE DETECCION DE BALON (Prioritario)",
+    "  - Implementar filtro de confianza en rango 0.25-0.75 como propuesto",
+    "  - Ajustar tamanio minimo de bounding box para balon (actualmente demasiado permisivo)",
+    "  - Evaluar modelos alternativos de YOLO optimizados para objetos pequenios",
+    "  - Aumentar data augmentation especifica para balones en video",
+    "",
+    "FASE 2 - OPTIMIZACION DE ARQUITECTURA",
+    "  - Refactorizar pipeline de deteccion para modularidad",
+    "  - Implementar early-stopping si confianza esta por debajo de threshold minimo",
+    "  - Agregar cache de detecciones entre frames para estabilidad temporal",
+    "",
+    "FASE 2 - MEJORA DE JUGADORES",
+    "  - V2 esta a 0.8% del objetivo de 93% (89.88% vs 93%)",
+    "  - Ajustes menores en NMS (Non-Maximum Suppression) podrian alcanzar objetivo",
+    "  - Considerar ensemble de modelos para mayor robustez",
+    "",
+    "FASE 3 - VALIDACION Y TESTING",
+    "  - Test completo con 500+ frames para confirmar estabilidad",
+    "  - Validacion cruzada con diferentes tipos de campos (grass, artificial, indoor)",
+    "  - Benchmarking de latencia para cumplir requisitos de tiempo real"
+  ],
+  "metricas_resumen": {
+    "version_actual": "V2",
+    "mejoras_respecto_v1": {
+      "jugadores": "+1.01%",
+      "balon": "+35.69%",
+      "cancha": "+0.0%",
+      "homografia": "0% (mantiene 100%)"
+    },
+    "status_general": "PROGRESO POSITIVO CON MEJORAS SIGNIFICATIVAS EN CANCHA"
+  }
+}

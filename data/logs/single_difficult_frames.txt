@@ -1,0 +1,33 @@
+FRAMES DIFÍCILES
+============================================================
+
+Frame     1 | Score: 0.42 | low_ball_conf+low_pitch_conf
+Frame    10 | Score: 0.42 | low_ball_conf+low_pitch_conf
+Frame    11 | Score: 0.41 | low_ball_conf+low_pitch_conf
+Frame    19 | Score: 0.42 | low_ball_conf+low_pitch_conf
+Frame    59 | Score: 0.41 | low_ball_conf+low_pitch_conf
+Frame    60 | Score: 0.41 | low_ball_conf+low_pitch_conf
+Frame    61 | Score: 0.40 | low_ball_conf+low_pitch_conf
+Frame    62 | Score: 0.40 | low_ball_conf+low_pitch_conf
+Frame   110 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   114 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   115 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   148 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   149 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   150 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   151 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   152 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   153 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   154 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   155 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   156 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   180 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   181 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   182 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   183 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   184 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   185 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   186 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   187 | Score: 0.39 | low_ball_conf+low_pitch_conf
+Frame   188 | Score: 0.38 | low_ball_conf+low_pitch_conf
+Frame   189 | Score: 0.37 | low_ball_conf+low_pitch_conf

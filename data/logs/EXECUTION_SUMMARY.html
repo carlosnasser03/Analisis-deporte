@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Validation Execution Summary</title>
+<style>
+  body { font-family: Segoe UI, sans-serif; margin: 20px; background: #f5f5f5; }
+  .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+  h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+  h2 { color: #34495e; margin-top: 25px; }
+  .success { color: #27ae60; font-weight: bold; }
+  .warning { color: #e67e22; font-weight: bold; }
+  .error { color: #e74c3c; font-weight: bold; }
+  .metric { display: inline-block; background: #ecf0f1; padding: 15px; margin: 10px 10px 10px 0; border-radius: 5px; border-left: 4px solid #3498db; }
+  .metric-label { font-size: 0.9em; color: #7f8c8d; }
+  .metric-value { font-size: 1.8em; font-weight: bold; color: #2c3e50; }
+  table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+  th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ecf0f1; }
+  th { background: #3498db; color: white; }
+  tr:hover { background: #f9f9f9; }
+  .status-badge { display: inline-block; padding: 5px 10px; border-radius: 3px; font-size: 0.85em; font-weight: bold; }
+  .status-success { background: #d4edda; color: #155724; }
+  .files-list { background: #f9f9f9; padding: 15px; border-radius: 5px; border-left: 4px solid #27ae60; }
+  .file-item { margin: 8px 0; font-family: monospace; font-size: 0.9em; }
+  .recommendation { background: #e3f2fd; padding: 10px; margin: 10px 0; border-left: 4px solid #1976d2; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ejecucion de Validacion Optimizada</h1>
+
+  <p>
+    <span class="status-badge status-success">COMPLETADO EXITOSAMENTE</span>
+  </p>
+
+  <h2>Informacion de Ejecucion</h2>
+  <div>
+    <div class="metric">
+      <div class="metric-label">Script Ejecutado</div>
+      <div class="metric-value">0_validate_single.py</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Frames Procesados</div>
+      <div class="metric-value" style="color: #27ae60;">500</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Parametro --skip</div>
+      <div class="metric-value">1</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Parametro --max-frames</div>
+      <div class="metric-value">500</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Timestamp</div>
+      <div class="metric-value" style="font-size: 1em;">2026-07-07 13:00:54 UTC</div>
+    </div>
+  </div>
+
+  <h2>Metricas de Deteccion</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Detector</th>
+        <th>Confianza Media</th>
+        <th>Min-Max</th>
+        <th>Desviacion Est.</th>
+        <th>Tasa de Fallo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Jugadores</strong></td>
+        <td style="color: #27ae60;"><strong>90.80%</strong></td>
+        <td>84.17% - 92.59%</td>
+        <td>1.45%</td>
+        <td><span class="success">0.0%</span></td>
+      </tr>
+      <tr>
+        <td><strong>Balon</strong></td>
+        <td>62.02%</td>
+        <td>0.0% - 88.90%</td>
+        <td>30.52%</td>
+        <td><span class="warning">18.2%</span></td>
+      </tr>
+      <tr>
+        <td><strong>Cancha</strong></td>
+        <td style="color: #e67e22;"><strong>27.80%</strong></td>
+        <td>21.08% - 40.85%</td>
+        <td>5.28%</td>
+        <td><span class="error">100.0%</span></td>
+      </tr>
+      <tr>
+        <td><strong>Homografia</strong></td>
+        <td style="color: #27ae60;"><strong>100.0%</strong></td>
+        <td>100.0% - 100.0%</td>
+        <td>0.0%</td>
+        <td><span class="success">0.0%</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Archivos Generados</h2>
+  <div class="files-list">
+    <div class="file-item">optimized_single_frames.csv (42 KB) - Metricas detalladas por frame</div>
+    <div class="file-item">optimized_single_summary.json (1.3 KB) - Resumen estadistico</div>
+    <div class="file-item">single_frames.csv - Copia del archivo original</div>
+    <div class="file-item">single_summary.json - Copia del resumen original</div>
+    <div class="file-item">single_difficult_frames.txt - Frames con baja confianza</div>
+    <div class="file-item">processing_results.json - Reporte completo con timestamps</div>
+  </div>
+
+  <h2>Fortalezas Detectadas</h2>
+  <ul>
+    <li><span class="success">Excelente deteccion de jugadores</span> - 90.8% de confianza media</li>
+    <li><span class="success">Validacion de homografia perfecta</span> - 100% de validez</li>
+    <li><span class="success">Bajo variance en conteo de jugadores</span> - Desviacion: 0.92</li>
+    <li><span class="success">Deteccion consistente de puntos clave</span> - Promedio 8.47 keypoints</li>
+  </ul>
+
+  <h2>Areas de Mejora</h2>
+  <div class="recommendation">
+    <strong>Deteccion de Cancha Baja</strong><br>
+    La confianza promedio (27.8%) esta muy baja. Se recomienda revisar el modelo o los parametros.
+  </div>
+  <div class="recommendation">
+    <strong>Clasificacion de Equipos Inactiva</strong><br>
+    Tasa de fallo del 100%. Verificar si el modulo esta implementado correctamente.
+  </div>
+  <div class="recommendation">
+    <strong>Deteccion de Balon Inconsistente</strong><br>
+    Tasa de fallo del 18.2%. Considerar reentrenamiento o ajuste de umbral de confianza.
+  </div>
+
+  <h2>Recomendaciones</h2>
+  <ol>
+    <li>Investigar modelo de deteccion de cancha - considerar reentrenamiento</li>
+    <li>Revisar logica de clasificacion de equipos - actualmente no funcional</li>
+    <li>Mejorar deteccion de balon - agregar mas datos de entrenamiento</li>
+    <li>Considerar metodos de ensemble para deteccion mas robusta</li>
+  </ol>
+
+  <h2>Comando Ejecutado</h2>
+  <pre style="background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto;">
+python scripts/0_validate_single.py --skip 1 --max-frames 500
+  </pre>
+
+  <p style="margin-top: 30px; color: #7f8c8d; font-size: 0.9em;">
+    Generado: 2026-07-07 13:00:54 UTC
+  </p>
+</div>
+</body>
+</html>

@@ -1,0 +1,37 @@
+device:
+  primary: intel:cpu
+  fallback: cpu
+
+detection:
+  player:
+    confidence_threshold: 0.35
+    iou_threshold: 0.50
+    use_openvino: true
+
+  pitch:
+    confidence_threshold: 0.45
+    keypoint_confidence_min: 0.40
+    min_keypoints_valid: 3
+
+  ball:
+    confidence_threshold: 0.25
+    iou_threshold: 0.50
+
+processing:
+  frame_skip: 2
+  max_frames: null
+
+tracking:
+  track_frame_rate: 25
+  min_track_length_seconds: 5.0
+
+validation:
+  save_logs: true
+  logs_dir: data/logs
+  log_every_n_frames: 50
+
+output:
+  format: video
+  draw_detections: true
+  draw_boxes: true
+  draw_tracking: true

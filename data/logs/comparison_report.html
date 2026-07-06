@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Optimizacion - Antes vs Despues</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .component-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        .component-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        .component-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .metric {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .metric-label {
+            color: #666;
+            font-weight: 500;
+        }
+        .metric-value {
+            color: #333;
+            margin-top: 3px;
+        }
+        .before-after {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+        .value {
+            background: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .value-before {
+            color: #e74c3c;
+        }
+        .value-after {
+            color: #27ae60;
+        }
+        .delta {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .positive {
+            color: #27ae60;
+        }
+        .negative {
+            color: #e74c3c;
+        }
+        .neutral {
+            color: #95a5a6;
+        }
+        .findings {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .findings h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .findings ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .findings li {
+            padding: 5px 0;
+            color: #333;
+            font-size: 14px;
+        }
+        .findings li:before {
+            content: "• ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .assessment {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .assessment h4 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+        .assessment p {
+            color: #856404;
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        table tr:hover {
+            background: #f5f5f5;
+        }
+        .footer {
+            background: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .improvement-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .improvement-badge.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+        .improvement-badge.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .improvement-badge.neutral {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Reporte de Optimizacion de Deteccion</h1>
+            <p>Analisis comparativo: Antes vs Despues de la optimizacion</p>
+            <p>Fecha: 2026-07-06 | Frames: 500 (antes) vs 200 (despues)</p>
+        </div>
+
+        <div class="content">
+            <!-- Key Findings -->
+            <div class="section">
+                <h2 class="section-title">Hallazgos Clave</h2>
+                <div class="assessment">
+                    <h4>Evaluacion General</h4>
+                    <p>La optimizacion produjo resultados MIXTOS: mejoras significativas en deteccion de cancha (+38.24% confianza media, +47.58% puntos clave validos) pero con trade-offs en precision de confianza de jugadores (-2.12%) y mas fallos en balon (+25.27%). El objetivo de aumentar sensibilidad se logro parcialmente.</p>
+                </div>
+                <div class="findings">
+                    <h4>Cambios Detectados</h4>
+                    <ul>
+                        <li><span class="negative">NEGATIVO:</span> Confianza de jugadores DISMINUYO en 0.0192 (-2.12%)</li>
+                        <li><span class="negative">NEGATIVO:</span> Confianza de balon DISMINUYO en 0.3217 (-51.86%)</li>
+                        <li><span class="positive">POSITIVO:</span> Confianza de cancha MEJORO en 0.1063 (+38.24%)</li>
+                        <li><span class="positive">POSITIVO:</span> Puntos clave de cancha MEJORARON en 4.03 (+47.58%)</li>
+                        <li><span class="positive">POSITIVO:</span> Fallos de cancha DISMINUYERON en 300 frames (-60.00%)</li>
+                        <li><span class="negative">NEGATIVO:</span> Fallos de balon AUMENTARON en 23 frames (+25.27%)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Jugadores Component -->
+            <div class="section">
+                <h2 class="section-title">Componente: Jugadores</h2>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h3>Confianza Promedio</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.9080</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.8887</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">-0.0192 (-2.12%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Confianza Minima</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.8417</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.8169</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">-0.0248 (-2.95%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Confianza Maxima</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.9259</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.9094</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">-0.0164 (-1.78%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Cantidad Promedio de Jugadores</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">20.80</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">20.98</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta positive">+0.18 (+0.86%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Balon Component -->
+            <div class="section">
+                <h2 class="section-title">Componente: Balon</h2>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h3>Confianza Promedio</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.6202</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.2985</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">-0.3217 (-51.86%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Confianza Maxima</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.8890</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.8416</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">-0.0474 (-5.33%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Fallos Bajos de Confianza</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">91 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">114 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">+23 frames (+25.27%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancha Component -->
+            <div class="section">
+                <h2 class="section-title">Componente: Cancha</h2>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h3>Confianza Promedio</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.2780</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.3843</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta positive">+0.1063 (+38.24%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Puntos Clave Validos Promedio</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">8.47</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">12.50</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta positive">+4.03 (+47.58%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Fallos Bajos de Confianza</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">500 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">200 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta positive">-300 frames (-60.00%)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Desviacion Estandar de Confianza</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0.0528</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0.0958</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta negative">+0.0430 (+81.38%)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Homografia Component -->
+            <div class="section">
+                <h2 class="section-title">Componente: Homografia</h2>
+                <div class="component-grid">
+                    <div class="component-card">
+                        <h3>Validez</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">100.00%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">100.00%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta neutral">0.00% (Sin cambios)</div>
+                        </div>
+                    </div>
+                    <div class="component-card">
+                        <h3>Fallos Invalidos</h3>
+                        <div class="metric">
+                            <div class="metric-label">Antes:</div>
+                            <div class="value value-before">0 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Despues:</div>
+                            <div class="value value-after">0 frames</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Delta:</div>
+                            <div class="delta neutral">0 frames (Sin cambios)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Failure Rates -->
+            <div class="section">
+                <h2 class="section-title">Tasas de Fallo Comparativas</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo de Fallo</th>
+                            <th>Antes</th>
+                            <th>Despues</th>
+                            <th>Cambio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jugadores - Confianza Baja</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td><span class="neutral">Sin cambios</span></td>
+                        </tr>
+                        <tr>
+                            <td>Balon - Confianza Baja</td>
+                            <td>18.2%</td>
+                            <td>57.0%</td>
+                            <td><span class="negative">+38.8pp (Empeoro)</span></td>
+                        </tr>
+                        <tr>
+                            <td>Cancha - Confianza Baja</td>
+                            <td>100.0%</td>
+                            <td>100.0%</td>
+                            <td><span class="neutral">Sin cambios</span></td>
+                        </tr>
+                        <tr>
+                            <td>Homografia - Invalida</td>
+                            <td>0.0%</td>
+                            <td>0.0%</td>
+                            <td><span class="neutral">Sin cambios</span></td>
+                        </tr>
+                        <tr>
+                            <td>Clasificacion de Equipo - Fallida</td>
+                            <td>100.0%</td>
+                            <td>100.0%</td>
+                            <td><span class="neutral">Sin cambios</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="section">
+                <h2 class="section-title">Recomendaciones</h2>
+                <div class="findings">
+                    <h4>Acciones Sugeridas</h4>
+                    <ul>
+                        <li>Los umbrales de confianza del balon se bajaron demasiado (0.30 a 0.20). Considerar aumentar a 0.25 para mantener equilibrio</li>
+                        <li>La mejora en cancha fue excepcional (+38-47%). Considerar mantener estos cambios</li>
+                        <li>El trade-off en precision de jugadores (-2.12%) es minimo y aceptable para la ganancia en cancha</li>
+                        <li>Implementar validacion adicional para falsos positivos de balon (ahora con tasa de fallo de 57%)</li>
+                        <li>Revisar por que la confianza de cancha mejoro pero la tasa de fallo sigue en 100%</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Analisis Generado: 2026-07-06 | Archivos de referencia: single_summary.json (antes) vs summary_573e61_0.json (despues)</p>
+            <p>Este reporte fue generado automaticamente. Para detalles adicionales, consultar comparison_analysis.json</p>
+        </div>
+    </div>
+</body>
+</html>

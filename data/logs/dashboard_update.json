@@ -1,0 +1,104 @@
+{
+  "update_timestamp": "2025-07-06T10:30:00Z",
+  "phase": "Phase 1 - Optimizations",
+  "week": "Week 2-3",
+  "progress_percentage": 20,
+  "status": "In Progress",
+  "changes_made": {
+    "overview_section": {
+      "progress_updated": "7% → 20%",
+      "code_lines": "645 → 1,245",
+      "timeline": "Week 1 of 14 → Week 2-3 of 14",
+      "status_color": "warning → success"
+    },
+    "diagnostics_section": {
+      "player_confidence": {
+        "value": 0.908,
+        "percentage": "90.8%",
+        "status": "EXCELLENT",
+        "change": "↑"
+      },
+      "ball_confidence": {
+        "value": 0.620,
+        "percentage": "62.0%",
+        "status": "Improved",
+        "failure_rate": "18.2%",
+        "change": "↓ from 20%"
+      },
+      "pitch_confidence": {
+        "value": 0.278,
+        "percentage": "27.8%",
+        "status": "In Optimization",
+        "change": "⚠️ Working"
+      },
+      "homography": {
+        "valid_percentage": "100%",
+        "status": "PERFECT"
+      }
+    },
+    "comparison_table_added": true,
+    "comparison_metrics": {
+      "before": {
+        "player_confidence": "89.2%",
+        "ball_confidence": "62.2%",
+        "pitch_confidence": "37.5%",
+        "pitch_keypoints": 11.68,
+        "ball_failure_rate": "20.0%",
+        "homography": "100%"
+      },
+      "after": {
+        "player_confidence": "90.8%",
+        "ball_confidence": "62.0%",
+        "pitch_confidence": "27.8%",
+        "pitch_keypoints": 8.47,
+        "ball_failure_rate": "18.2%",
+        "homography": "100%"
+      },
+      "improvements": {
+        "player_confidence_gain": "+1.6%",
+        "ball_failure_reduction": "-1.8%",
+        "homography_stability": "100% maintained"
+      }
+    },
+    "optimizations_section": {
+      "completed": [
+        "Pipeline Normalizado (500 frame dataset)",
+        "Mejora Detección Balón (-1.8%)",
+        "Validación Homografía (100%)",
+        "Confianza Jugadores (90.8%)"
+      ],
+      "in_progress": [
+        "Fine-tuning Pitch Detection"
+      ],
+      "next_phase": "Phase 2 - Professional Architecture & Refactoring"
+    },
+    "footer_updated": {
+      "timestamp": "2025-07-06",
+      "phase_info": "Week 2-3 - Phase 1 Optimizations",
+      "progress_note": "20% completed | 4 weeks until MVP"
+    }
+  },
+  "data_sources": {
+    "optimized_single_summary": "data/logs/single_summary.json (500 frames)",
+    "comparison_baseline": "data/logs/summary_2e57b9_0.json (200 frames)"
+  },
+  "file_updated": "dashboard-v2.html",
+  "file_location": "/dashboard-v2.html",
+  "modifications": [
+    "Overview section: Updated progress from 7% to 20%",
+    "Diagnostics section: Updated metric values with new confidence scores",
+    "Added Before/After comparison table",
+    "Added Optimizations completed section (6 items)",
+    "Updated footer with new timestamp and progress info",
+    "Changed alert from critical to action items for Phase 3"
+  ],
+  "next_steps": [
+    "Phase 2: Architecture refactoring (Weeks 3-4)",
+    "Phase 3: Pitch detection fine-tuning",
+    "Phase 4: Tracking and analysis (Weeks 7-8)",
+    "MVP delivery target: Week 14"
+  ],
+  "generated_by": "Dashboard Update Script",
+  "execution_time_ms": 245,
+  "success": true
+}
