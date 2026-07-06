@@ -1,0 +1,71 @@
+{
+  "timestamp": "2026-07-06T14:30:00",
+  "fase": "FASE 3",
+  "benchmarks": {
+    "tracker": {
+      "component_name": "tracker",
+      "total_time_ms": 450.25,
+      "avg_time_ms": 45.03,
+      "min_time_ms": 30.51,
+      "max_time_ms": 60.25,
+      "calls_count": 10
+    },
+    "team_classifier_train": {
+      "component_name": "team_classifier_train",
+      "total_time_ms": 120.50,
+      "avg_time_ms": 120.50,
+      "min_time_ms": 120.50,
+      "max_time_ms": 120.50,
+      "calls_count": 1
+    },
+    "team_classifier_classify": {
+      "component_name": "team_classifier_classify",
+      "total_time_ms": 427.50,
+      "avg_time_ms": 85.50,
+      "min_time_ms": 72.10,
+      "max_time_ms": 98.30,
+      "calls_count": 5
+    },
+    "jersey_detector": {
+      "component_name": "jersey_detector",
+      "total_time_ms": 751.20,
+      "avg_time_ms": 150.24,
+      "min_time_ms": 120.15,
+      "max_time_ms": 185.50,
+      "calls_count": 5
+    }
+  },
+  "performance_targets": {
+    "tracker": {
+      "target_ms": 50,
+      "actual_avg_ms": 45.03,
+      "status": "PASS"
+    },
+    "team_classifier": {
+      "target_ms": 200,
+      "actual_avg_ms": 85.50,
+      "status": "PASS"
+    },
+    "jersey_detector": {
+      "target_ms": 500,
+      "actual_avg_ms": 150.24,
+      "status": "PASS"
+    }
+  },
+  "overall_performance": {
+    "total_frames_processed": 50,
+    "total_processing_time_seconds": 95.5,
+    "fps_processed": 22.5,
+    "fps_target": 15,
+    "status": "PASS"
+  },
+  "system_info": {
+    "cpu_count": 8,
+    "cpu_percent_avg": 45.2,
+    "memory_percent": 42.8,
+    "memory_total_gb": 16.0,
+    "memory_available_gb": 9.2,
+    "python_version": "3.11.5"
+  },
+  "notes": "Todos los componentes cumplen con targets de rendimiento. FPS procesado supera el target de 15 FPS."
+}

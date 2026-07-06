@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Skill(impeccable)",
-      "Skill(impeccable:*)"
+      "Skill(impeccable:*)",
+      "Bash(python -m pytest tests/test_jersey_ocr.py::TestJerseyPreprocessing -v)",
+      "Bash(python run_tracker_tests.py)"
     ]
   }
 }

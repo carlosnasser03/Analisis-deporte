@@ -1,0 +1,110 @@
+{
+  "timestamp": "2026-07-06T14:55:09.270773",
+  "video_path": "C:\\Users\\cavilez\\Desktop\\Proyectos\\Anlisis deporte\\data\\08fd33_0.mp4",
+  "test_stages": {
+    "extraction": {
+      "status": "success",
+      "frames_extracted": 100
+    },
+    "detection": {
+      "status": "success",
+      "players_per_frame": 10,
+      "total_detections": 1000
+    },
+    "training": {
+      "status": "success",
+      "training_samples": 100,
+      "teams_detected": 2,
+      "color_separation_distance": 79.84478982083111,
+      "color_separation_valid": true,
+      "team_colors": {
+        "0": {
+          "name": "Team_0",
+          "bgr": [
+            60,
+            107,
+            77
+          ],
+          "hsv_range": [
+            [
+              34,
+              77,
+              57
+            ],
+            [
+              64,
+              147,
+              157
+            ]
+          ],
+          "confidence": 0.5,
+          "sample_count": 50,
+          "player_count": 0
+        },
+        "1": {
+          "name": "Team_1",
+          "bgr": [
+            95,
+            89,
+            76
+          ],
+          "hsv_range": [
+            [
+              85,
+              16,
+              45
+            ],
+            [
+              115,
+              86,
+              145
+            ]
+          ],
+          "confidence": 0.5,
+          "sample_count": 50,
+          "player_count": 0
+        }
+      }
+    },
+    "classification": {
+      "status": "success",
+      "frames_classified": 100,
+      "total_players_processed": 1000,
+      "correctly_assigned": 1000,
+      "valid_assignments": 940,
+      "assignment_rate": 100.0,
+      "valid_rate": 94.0,
+      "mean_confidence": 0.7597098696144298,
+      "classification_errors": 0
+    },
+    "validation": {
+      "status": "success",
+      "consistency_score": 0.75970986961443,
+      "frames_in_consistency_test": 100,
+      "metrics": {
+        "accuracy": 0.0,
+        "color_separation_distance": 79.84478982083111,
+        "consistency_score": 0.0,
+        "mean_confidence": 0.6805584480139386,
+        "valid_classifications_percentage": 90.0,
+        "model_used": "HSV_KMeans"
+      }
+    }
+  },
+  "summary": {
+    "total_frames_processed": 100,
+    "frames_classified": 100,
+    "classification_success_rate": 100.0,
+    "total_players_analyzed": 1000,
+    "valid_assignments": 940,
+    "overall_accuracy": 94.0,
+    "target_accuracy": 90.0,
+    "target_met": true,
+    "mean_confidence": 0.7597098696144298,
+    "consistency_score": 0.75970986961443,
+    "color_separation_valid": true,
+    "siglip_available": false,
+    "test_passed": true
+  },
+  "success": true
+}

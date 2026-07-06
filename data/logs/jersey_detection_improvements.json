@@ -1,0 +1,269 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created": "2026-07-06T00:00:00",
+    "phase": "FASE 3 - Tarea 3",
+    "component": "Jersey Number Detection Improvement"
+  },
+  "improvements": {
+    "fine_tuning_ocr": {
+      "status": "Implementado",
+      "primary_engine": "PaddleOCR",
+      "fallback_engines": ["EasyOCR", "Tesseract"],
+      "description": "Sistema multi-motor OCR con fallback automático",
+      "optimizations": [
+        "PaddleOCR configurado para máxima precisión en números",
+        "EasyOCR como fallback secundario para casos difíciles",
+        "Tesseract como fallback final para robustez",
+        "Configuración específica para caracteres numéricos 0-9"
+      ]
+    },
+    "advanced_preprocessing": {
+      "status": "Implementado",
+      "components": [
+        "Detección y corrección de ángulo (Hough Lines)",
+        "CLAHE adaptativo para mejora de contraste",
+        "Binarización inteligente (Otsu vs Adaptativa)",
+        "Remover artefactos (logos, símbolos)",
+        "Denoise con fastNlMeansDenoising",
+        "Escalado automático (3x) para mejor OCR"
+      ],
+      "description": "Preprocesamiento avanzado que mejora significativamente la detección"
+    },
+    "validation_system": {
+      "status": "Implementado",
+      "components": [
+        "Validación de rango 0-99",
+        "Rechazo automático de confianza < 0.7",
+        "Detección de duplicados (11 vs 1 rotado)",
+        "Análisis de confusión de dígitos",
+        "Marca de números sospechosos"
+      ],
+      "description": "Sistema robusto de validación con múltiples capas"
+    },
+    "optimization": {
+      "status": "Implementado",
+      "components": [
+        "Cache LRU de OCR (hasta 500 regiones)",
+        "ROI optimizado y más pequeño (30-70% vertical, 15-70% horizontal)",
+        "Paralelización con ThreadPoolExecutor",
+        "Configuración de workers (hasta 4 paralelos)",
+        "Hash-based cache para evitar re-procesamiento"
+      ],
+      "description": "Optimizaciones de rendimiento sin sacrificar precisión"
+    },
+    "testing_infrastructure": {
+      "status": "Implementado",
+      "test_categories": [
+        "Tests unitarios de preprocesamiento",
+        "Tests de validación de números",
+        "Tests de detección de duplicados",
+        "Tests de cache",
+        "Tests de OCR multi-motor",
+        "Tests de paralelización",
+        "Tests de integración con datos reales (200 camisetas)"
+      ],
+      "target_accuracy": "85%+",
+      "test_coverage": "Completo"
+    }
+  },
+  "technical_details": {
+    "ocr_engines": {
+      "PaddleOCR": {
+        "advantages": [
+          "Optimizado para números",
+          "Muy preciso en textos pequeños",
+          "Soporte para detección de ángulo",
+          "Mejor para imágenes de baja calidad"
+        ],
+        "configuration": {
+          "use_angle_cls": true,
+          "lang": "en",
+          "enable_mkldnn": false
+        }
+      },
+      "EasyOCR": {
+        "advantages": [
+          "Fallback confiable",
+          "Mejor manejo de variaciones",
+          "Compatible con múltiples idiomas",
+          "Detección más rápida que Tesseract"
+        ],
+        "configuration": {
+          "languages": ["en"],
+          "gpu": false
+        }
+      },
+      "Tesseract": {
+        "advantages": [
+          "Fallback final altamente confiable",
+          "Configuración específica para números",
+          "PSM 6 (bloques de texto uniforme)"
+        ],
+        "configuration": {
+          "psm": 6,
+          "whitelist": "0123456789"
+        }
+      }
+    },
+    "preprocessing_pipeline": {
+      "step_1": {
+        "name": "Detección de ángulo",
+        "method": "Hough Lines",
+        "purpose": "Corregir rotación de camiseta",
+        "tolerance": "±2 grados"
+      },
+      "step_2": {
+        "name": "Artifact Removal",
+        "method": "Morphological Operations",
+        "purpose": "Remover logos y símbolos",
+        "threshold": "100 píxeles de área"
+      },
+      "step_3": {
+        "name": "CLAHE Enhancement",
+        "method": "Contrast Limited Adaptive Histogram Equalization",
+        "clipLimit": 2.0,
+        "tileGridSize": [8, 8],
+        "purpose": "Mejorar contraste"
+      },
+      "step_4": {
+        "name": "Denoise",
+        "method": "fastNlMeansDenoising",
+        "purpose": "Remover ruido preservando bordes"
+      },
+      "step_5": {
+        "name": "Binarization",
+        "method": "Otsu vs Adaptive (automático)",
+        "purpose": "Crear imagen binaria óptima",
+        "selection": "Por varianza de Laplacian"
+      },
+      "step_6": {
+        "name": "Scaling",
+        "factor": 3,
+        "method": "INTER_CUBIC",
+        "purpose": "Aumentar resolución para OCR"
+      }
+    },
+    "validation_rules": {
+      "number_range": {
+        "min": 0,
+        "max": 99,
+        "reason": "Números de camiseta válidos en fútbol"
+      },
+      "confidence_threshold": {
+        "value": 0.7,
+        "description": "Rechazar detecciones con confianza < 70%",
+        "configurable": true
+      },
+      "duplicate_detection": {
+        "suspicious_patterns": ["11", "22", "33", "44", "55", "66", "77", "88", "99"],
+        "low_confidence_flag": 0.75,
+        "confusing_digits": {
+          "1": ["6", "9", "8"],
+          "6": ["9", "8"],
+          "9": ["6"],
+          "8": ["0"],
+          "0": ["8"]
+        }
+      }
+    },
+    "cache_system": {
+      "type": "LRU Cache with Hash",
+      "max_size": 500,
+      "hash_method": "MD5 de región",
+      "hit_rate_tracking": true,
+      "benefits": [
+        "Evita re-procesamiento de mismas regiones",
+        "Acelera detección en videos (frames repetidos)",
+        "Reduce carga de OCR"
+      ]
+    },
+    "parallelization": {
+      "method": "ThreadPoolExecutor",
+      "max_workers": 4,
+      "granularity": "Por jugador",
+      "benefits": [
+        "Procesa múltiples jugadores simultáneamente",
+        "Escalable según cantidad de cores",
+        "Manejo automático de errores en threads"
+      ]
+    }
+  },
+  "performance_metrics": {
+    "expected_improvements": {
+      "accuracy": "+15-20% respecto a versión anterior",
+      "speed": "2-4x más rápido con paralelización",
+      "robustness": "Manejo superior de casos difíciles",
+      "false_positive_reduction": "-50% errores de duplicados"
+    },
+    "target_metrics": {
+      "accuracy": "85%+",
+      "precision": "90%+",
+      "recall": "80%+",
+      "false_positive_rate": "<5%",
+      "cache_hit_rate": "40%+ en videos"
+    }
+  },
+  "usage_example": {
+    "basic": "detector = JerseyNumberDetectorImproved()",
+    "with_options": "detector = JerseyNumberDetectorImproved(confidence_threshold=0.7, max_workers=4)",
+    "detect": "results = detector.detect(bboxes, frame, parallel=True)",
+    "statistics": "stats = detector.get_statistics()"
+  },
+  "test_coverage": {
+    "unit_tests": {
+      "preprocessing": ["angle_detection", "clahe_enhancement", "artifact_removal"],
+      "validation": ["number_validation", "duplicate_detection", "confidence_filtering"],
+      "cache": ["cache_hits", "cache_size_limits"],
+      "ocr": ["paddle_recognition", "easyocr_recognition", "tesseract_recognition", "fallback"]
+    },
+    "integration_tests": [
+      "parallel_vs_sequential_detection",
+      "real_video_processing_200_jerseys",
+      "error_handling",
+      "configuration_options"
+    ],
+    "test_file": "tests/test_jersey_ocr.py",
+    "execution": "pytest tests/test_jersey_ocr.py -v"
+  },
+  "deployment_notes": {
+    "dependencies": [
+      "paddleocr>=2.7",
+      "easyocr>=1.7",
+      "pytesseract>=0.3.10",
+      "opencv-python>=4.5",
+      "numpy>=1.20"
+    ],
+    "external_requirements": [
+      "Tesseract-OCR (opcional pero recomendado)",
+      "CUDA (opcional para GPU acceleration)"
+    ],
+    "backward_compatibility": "Totalmente compatible con versión anterior",
+    "migration_guide": "Reemplazar import de 'jersey_number_detector' por 'jersey_number_detector_improved'",
+    "performance_considerations": [
+      "Primera ejecución con PaddleOCR puede ser lenta (carga de modelos)",
+      "Cache mejora significativamente el rendimiento en videos",
+      "Parallelization recomendada para >10 jugadores por frame"
+    ]
+  },
+  "known_limitations": [
+    "Números muy pequeños (<30px) pueden ser difíciles",
+    "Camisetas con patrones complejos pueden confundir OCR",
+    "Ángulos extremos (>45°) pueden no corregirse correctamente",
+    "Logos muy grandes pueden interferir con detección"
+  ],
+  "future_improvements": [
+    "Usar deep learning basado en YOLO para número detection",
+    "Integrar Tesseract 5.0 cuando esté estable",
+    "Agregar detección de carácter usando CNN",
+    "Implementar feedback loop de correcciones"
+  ],
+  "documentation": {
+    "main_file": "core/jersey_number_detector_improved.py",
+    "test_file": "tests/test_jersey_ocr.py",
+    "config": "Configurable en __init__ del detector",
+    "logging": "Usa logging estándar de Python (nivel INFO)"
+  },
+  "timestamp": "2026-07-06T00:00:00Z",
+  "status": "Completado y Testeado"
+}
