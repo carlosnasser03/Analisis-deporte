@@ -1,16 +1,61 @@
 # Core module - utilidades para detección, análisis y reportes
-# Versión: 2.1 (FASE 2 - Arquitectura + Análisis Final)
+# Versión: 2.2 (FASE 4 - Consolidador de Estadísticas)
 
-from .metrics import DetectionMetrics
-from .homography_validator import HomographyValidator
-from .detector import BallDetector, CornerDetector, UnifiedDetector
-from .team_classifier import TeamClassifier, TeamColor
-from .tracker import PlayerTracker
-from .jersey_number_detector import JerseyNumberDetector
-from .player_analyzer import PlayerAnalyzer, PlayerStats
-from .report_generator import ReportGenerator
+# Core statistics modules (no dependencies)
+from .player_stats_aggregator import (
+    PlayerStatsAggregator,
+    StatsExporter,
+    IntensityCategory,
+    MovementProfile,
+    ZoneStats,
+    VelocityMetrics,
+    IntensityMetrics,
+    DistanceMetrics,
+)
 
-__version__ = "2.1"
+# Optional modules (may require external dependencies)
+try:
+    from .metrics import DetectionMetrics
+except ImportError:
+    DetectionMetrics = None
+
+try:
+    from .homography_validator import HomographyValidator
+except ImportError:
+    HomographyValidator = None
+
+try:
+    from .detector import BallDetector, CornerDetector, UnifiedDetector
+except ImportError:
+    BallDetector = CornerDetector = UnifiedDetector = None
+
+try:
+    from .team_classifier import TeamClassifier, TeamColor
+except ImportError:
+    TeamClassifier = TeamColor = None
+
+try:
+    from .tracker import PlayerTracker
+except ImportError:
+    PlayerTracker = None
+
+try:
+    from .jersey_number_detector import JerseyNumberDetector
+except ImportError:
+    JerseyNumberDetector = None
+
+try:
+    from .player_analyzer import PlayerAnalyzer, PlayerStats as PlayerAnalyzerStats
+    PlayerStats = PlayerAnalyzerStats
+except ImportError:
+    PlayerAnalyzer = PlayerStats = None
+
+try:
+    from .report_generator import ReportGenerator
+except ImportError:
+    ReportGenerator = None
+
+__version__ = "2.2"
 
 __all__ = [
     'DetectionMetrics',
@@ -25,4 +70,12 @@ __all__ = [
     'PlayerAnalyzer',
     'PlayerStats',
     'ReportGenerator',
+    'PlayerStatsAggregator',
+    'StatsExporter',
+    'IntensityCategory',
+    'MovementProfile',
+    'ZoneStats',
+    'VelocityMetrics',
+    'IntensityMetrics',
+    'DistanceMetrics',
 ]

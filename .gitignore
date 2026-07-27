@@ -67,6 +67,11 @@ data/*.mov
 data/models/
 data/*.pt
 
+# AI Models (too large for GitHub)
+data/football-*_openvino_model/
+data/**/*.bin
+data/**/*.xml
+
 # Logs (logs are tracked, but can be excluded if needed)
 # data/logs/*.json
 # data/logs/*.txt

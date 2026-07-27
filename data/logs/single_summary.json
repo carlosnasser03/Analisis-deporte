@@ -1,33 +1,33 @@
 {
   "player_confidence": {
-    "mean": 0.9079740706682206,
-    "min": 0.8416597247123718,
-    "max": 0.925887942314148,
-    "std": 0.014465699558812137
+    "mean": 0.8972839864889781,
+    "min": 0.8313336968421936,
+    "max": 0.914599597454071,
+    "std": 0.013440086799110474
   },
   "player_count": {
-    "mean": 20.796,
-    "min": 19.0,
-    "max": 24.0,
-    "std": 0.9178147961326403
+    "mean": 20.285333333333334,
+    "min": 18.0,
+    "max": 23.0,
+    "std": 0.68013593412559
   },
   "ball_confidence": {
-    "mean": 0.6201981572508812,
+    "mean": 0.6301844075520834,
     "min": 0.0,
-    "max": 0.8889552354812622,
-    "std": 0.3051629222307767
+    "max": 0.87890625,
+    "std": 0.29554646849042276
   },
   "pitch_confidence": {
-    "mean": 0.27796644896268846,
-    "min": 0.21079790592193604,
-    "max": 0.40850579738616943,
-    "std": 0.05276377364760268
+    "mean": 0.2905830202102661,
+    "min": 0.23882651329040527,
+    "max": 0.36891210079193115,
+    "std": 0.03793945707193095
   },
   "pitch_keypoints_valid": {
-    "mean": 8.47,
-    "min": 6.0,
+    "mean": 8.764,
+    "min": 7.0,
     "max": 13.0,
-    "std": 1.7056083958517558
+    "std": 1.5574457721966866
   },
   "homography_valid": {
     "mean": 1.0,
@@ -43,16 +43,16 @@
   },
   "failures": {
     "player_low_confidence": 0,
-    "pitch_low_confidence": 500,
-    "ball_low_confidence": 91,
+    "pitch_low_confidence": 750,
+    "ball_low_confidence": 122,
     "homography_invalid": 0,
-    "team_classification_failed": 500
+    "team_classification_failed": 750
   },
-  "total_frames": 500,
+  "total_frames": 750,
   "failure_rates": {
     "player_low_confidence": "0.0%",
     "pitch_low_confidence": "100.0%",
-    "ball_low_confidence": "18.2%",
+    "ball_low_confidence": "16.3%",
     "homography_invalid": "0.0%",
     "team_classification_failed": "100.0%"
   }
