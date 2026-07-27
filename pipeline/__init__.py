@@ -11,20 +11,54 @@ Version: 2.0 (FASE 3)
 Author: Scout AI
 """
 
-from .video_processor import VideoProcessor, ProcessingConfig, ProcessingResult
-from .video_processor_fase3 import (
-    VideoProcessorFase3,
-    ProcessingConfigFase3,
-    ProcessingResultFase3,
-    PerformanceBenchmark
-)
-from .frame_processor import FrameProcessor, FrameData, Detection, DetectionQuality
+# FASE 1-2 imports (with error handling)
+try:
+    from .video_processor import VideoProcessor, ProcessingConfig, ProcessingResult
+except ImportError:
+    VideoProcessor = None
+    ProcessingConfig = None
+    ProcessingResult = None
+
+try:
+    from .video_processor_fase3 import (
+        VideoProcessorFase3,
+        ProcessingConfigFase3,
+        ProcessingResultFase3,
+        PerformanceBenchmark
+    )
+except ImportError:
+    VideoProcessorFase3 = None
+    ProcessingConfigFase3 = None
+    ProcessingResultFase3 = None
+    PerformanceBenchmark = None
+
+try:
+    from .frame_processor import FrameProcessor, FrameData, Detection, DetectionQuality
+except ImportError:
+    FrameProcessor = None
+    FrameData = None
+    Detection = None
+    DetectionQuality = None
+
+# FASE 5 imports
+try:
+    from .integrated_pipeline import (
+        IntegratedAnalysisPipeline,
+        ProcessingConfig,
+        FrameResult,
+        PipelineResult,
+        process_video_simple
+    )
+except ImportError:
+    IntegratedAnalysisPipeline = None
+    FrameResult = None
+    PipelineResult = None
+    process_video_simple = None
 
 __all__ = [
     # FASE 1-2
     'VideoProcessor',
     'FrameProcessor',
-    'ProcessingConfig',
     'ProcessingResult',
     'FrameData',
     'Detection',
@@ -34,6 +68,11 @@ __all__ = [
     'ProcessingConfigFase3',
     'ProcessingResultFase3',
     'PerformanceBenchmark',
+    # FASE 5
+    'IntegratedAnalysisPipeline',
+    'FrameResult',
+    'PipelineResult',
+    'process_video_simple',
 ]
 
 __version__ = '2.0.0'

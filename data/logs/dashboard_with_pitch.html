@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scout AI - Análisis de Partido</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        table thead {
+            background: #667eea;
+            color: white;
+        }
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        table tbody tr:hover {
+            background: #f5f5f5;
+        }
+        .stat-card {
+            display: inline-block;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            min-width: 200px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #e0e0e0;
+        }
+        .search-box {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .search-box button:hover {
+            background: #764ba2;
+        }
+        .metric-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 2px;
+        }
+        svg {
+            display: block;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+        .pitch-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>⚽ Scout AI - Análisis de Partido</h1>
+            <p>Scout Analytics</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Generado: 27/07/2026 15:18:08</p>
+        </div>
+<div class="section"><div class="section-title">📊 Resumen del Equipo</div>
+                <div class="stat-card">
+                    <div class="label">Jugadores</div>
+                    <div class="value">11</div>
+                    <div style="font-size: 0.8em; color: #999;"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Distancia Promedio</div>
+                    <div class="value">9733.3</div>
+                    <div style="font-size: 0.8em; color: #999;">m</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Intensidad Promedio</div>
+                    <div class="value">75.3</div>
+                    <div style="font-size: 0.8em; color: #999;">%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Sprints Totales</div>
+                    <div class="value">95</div>
+                    <div style="font-size: 0.8em; color: #999;"></div>
+                </div>
+</div>
+        <div class="section">
+            <div class="section-title">👥 Estadísticas de Jugadores</div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar jugador..." onkeyup="filterTable()">
+                <button onclick="filterTable()">Buscar</button>
+            </div>
+            <table id="playerTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Distancia (m)</th>
+                        <th>Vel. Max (m/s)</th>
+                        <th>Vel. Prom (m/s)</th>
+                        <th>Intensidad (%)</th>
+                        <th>Sprints</th>
+                        <th>Cambios Dir.</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><b>10</b></td>
+                        <td>9800</td>
+                        <td>8.90</td>
+                        <td>6.20</td>
+                        <td><span class="metric-badge">75.2%</span></td>
+                        <td>10</td>
+                        <td>42</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>4</b></td>
+                        <td>8900</td>
+                        <td>8.50</td>
+                        <td>5.80</td>
+                        <td><span class="metric-badge">72.1%</span></td>
+                        <td>8</td>
+                        <td>38</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>7</b></td>
+                        <td>10500</td>
+                        <td>9.20</td>
+                        <td>6.50</td>
+                        <td><span class="metric-badge">78.5%</span></td>
+                        <td>12</td>
+                        <td>45</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+<div class="section"><div class="section-title">📈 Gráficos Comparativos</div><div class="chart-container"><h3 style="margin-bottom: 15px;">⚽ Mapa del Campo - Distribución Táctica</h3><svg width="800"
+                       height="520"
+                       viewBox="0 0 800 520"
+                       xmlns="http://www.w3.org/2000/svg"
+                       style="border: 2px solid #333; background: #2d5016;">
+        <!-- Línea central vertical -->
+        <line x1="400.0" y1="0" x2="400.0" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Línea de meta -->
+        <line x1="0" y1="0" x2="800" y2="0" stroke="white" stroke-width="2"/>
+        <line x1="0" y1="520" x2="800" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Líneas laterales -->
+        <line x1="0" y1="0" x2="0" y2="520" stroke="white" stroke-width="2"/>
+        <line x1="800" y1="0" x2="800" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Círculo central -->
+        <circle cx="400.0" cy="260.0" r="40" fill="none" stroke="white" stroke-width="1"/>
+        <circle cx="400.0" cy="260.0" r="3" fill="white"/>
+
+        <!-- Área de penalti izquierda -->
+        <rect x="0" y="114.4" width="40" height="291.20000000000005" fill="none" stroke="white" stroke-width="1"/>
+        <rect x="0" y="187.2" width="15" height="145.60000000000002" fill="none" stroke="white" stroke-width="1"/>
+
+        <!-- Área de penalti derecha -->
+        <rect x="760" y="114.4" width="40" height="291.20000000000005" fill="none" stroke="white" stroke-width="1"/>
+        <rect x="785" y="187.2" width="15" height="145.60000000000002" fill="none" stroke="white" stroke-width="1"/>
+        
+            <circle cx="450" cy="150" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="450" y="150" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">7</text>
+            
+            <circle cx="600" cy="200" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="600" y="200" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">10</text>
+            
+            <circle cx="250" cy="200" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="250" y="200" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">4</text>
+            </svg><p style="font-size: 0.9em; color: #666; margin-top: 10px;">Rojo: Posiciones de máxima actividad | Azul: Áreas de menor uso</p></div><div class="chart-container"><p>Plotly no instalado. Instala: pip install plotly</p></div><div class="chart-container"><p>Plotly no instalado</p></div><div class="chart-container"><p>Plotly no instalado</p></div></div>
+        <div class="footer">
+            <p>© 2026 Scout AI - Análisis Profesional de Fútbol</p>
+            <p>Dashboard generado automáticamente por el sistema de análisis</p>
+        </div>
+    </div>
+    <script>
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('playerTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>
