@@ -1,8 +1,8 @@
 # Scout AI - Plataforma de Análisis Táctico de Fútbol
 
-**Versión:** 3.0 (FASE 3 - Optimización y Documentación)  
-**Estado:** ✅ FASE 3 Completada | 38% Speedup Alcanzado  
-**Última actualización:** 2026-07-06
+**Versión:** 4.0 (FASE 6 - Validación con StatsBomb)  
+**Estado:** ✅ FASE 5 Completada | ✅ FASE 6 En Progreso  
+**Última actualización:** 2026-07-28
 
 ---
 
@@ -28,9 +28,67 @@ Scout AI es una **plataforma de análisis táctico de fútbol** que permite regi
 
 ---
 
+## 🌟 FASE 6: Validación con StatsBomb (NUEVA)
+
+**Nuevas en FASE 6 (2026-07-28):**
+
+### Integración StatsBomb
+
+1. **Benchmarking Profesional** - Compara contra Premier League
+   - Distancia, velocidad e intensidad
+   - Benchmarks por posición (GK, DEF, MID, FWD)
+   - Percentiles automáticos
+
+2. **Análisis Comparativo** - Entiende el contexto
+   - ¿Cómo se compara tu jugador con profesionales?
+   - Identificación de fortalezas/debilidades
+   - Recomendaciones automáticas
+
+3. **Reportes Completos** - Exportación JSON
+   - Análisis individual por jugador
+   - Resumen de equipo
+   - Métricas z-score
+
+### Ejemplo de Uso
+
+```python
+from core.statsbomb_integration import StatsBombIntegration
+
+integrator = StatsBombIntegration()
+
+# Comparar con benchmark
+report = integrator.generate_comparison_report({
+    "player_id": 7,
+    "player_name": "Carlos",
+    "position": "MID",
+    "distance_m": 12000,
+    "max_velocity_m_s": 10.5,
+    "intensity_percent": 82
+})
+
+print(f"Percentil: {report['overall_percentile']:.1f}")
+print(f"Resumen: {report['summary']}")
+```
+
+### Tests Incluidos
+
+- **18 tests** cubriendo toda la integración
+- Validación de datos
+- Comparativas por posición
+- Casos límite y errores
+- Integración con pipeline
+
+### Documentación Completa
+
+- **[STATSBOMB_INTEGRATION.md](STATSBOMB_INTEGRATION.md)** - Guía completa con benchmarks
+- **[QUICKSTART_FASE5.md](QUICKSTART_FASE5.md)** - Sección "Comparar con Profesionales"
+- **tests/test_statsbomb_integration.py** - 18 tests de cobertura completa
+
+---
+
 ## ⚡ FASE 3: Optimización de Performance
 
-**Nuevas en FASE 3 (2026-07-06):**
+**Completada en FASE 3 (2026-07-06):**
 
 ### Optimizaciones Implementadas
 

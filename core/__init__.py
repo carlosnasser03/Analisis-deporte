@@ -1,5 +1,5 @@
 # Core module - utilidades para detección, análisis y reportes
-# Versión: 2.2 (FASE 4 - Consolidador de Estadísticas)
+# Versión: 3.0 (FASE 6 - Validación con StatsBomb)
 
 # Core statistics modules (no dependencies)
 from .player_stats_aggregator import (
@@ -55,7 +55,22 @@ try:
 except ImportError:
     ReportGenerator = None
 
-__version__ = "2.2"
+try:
+    from .statsbomb_integration import (
+        StatsBombIntegration,
+        StatsBombBenchmark,
+        ComparisonResult,
+        ComparisonLevel,
+        StatsBombData,
+    )
+except ImportError:
+    StatsBombIntegration = None
+    StatsBombBenchmark = None
+    ComparisonResult = None
+    ComparisonLevel = None
+    StatsBombData = None
+
+__version__ = "3.0"
 
 __all__ = [
     'DetectionMetrics',
@@ -78,4 +93,9 @@ __all__ = [
     'VelocityMetrics',
     'IntensityMetrics',
     'DistanceMetrics',
+    'StatsBombIntegration',
+    'StatsBombBenchmark',
+    'ComparisonResult',
+    'ComparisonLevel',
+    'StatsBombData',
 ]

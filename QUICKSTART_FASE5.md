@@ -221,6 +221,146 @@ La búsqueda es en **tiempo real** mientras escribes.
 
 ---
 
+## 🌟 NUEVO: Comparar con Profesionales (StatsBomb)
+
+### ¿Qué es esto?
+
+Ahora puedes **comparar a tu jugador con benchmarks de Premier League**. Descubre cómo se desempeña comparado con profesionales.
+
+### Ejemplo: "¿Cómo se compara mi mediocampista con los de la Premier?"
+
+```python
+from pipeline.integrated_pipeline import process_video_simple
+from core.statsbomb_integration import StatsBombIntegration
+
+# 1. Procesar tu video
+result = process_video_simple("mi_video.mp4", output_dir="results/")
+
+# 2. Obtener datos del jugador
+player_7_stats = result.player_stats["7"]
+
+# 3. Preparar datos para StatsBomb
+player_data = {
+    "player_id": 7,
+    "player_name": "Mi Mediocampista",
+    "position": "MID",  # GK, DEF, MID, FWD
+    "distance_m": player_7_stats["distance_total_m"],
+    "max_velocity_m_s": player_7_stats["max_velocity_m_s"],
+    "intensity_percent": player_7_stats["movement_intensity_percent"]
+}
+
+# 4. Comparar con StatsBomb
+integrator = StatsBombIntegration()
+report = integrator.generate_comparison_report(player_data)
+
+# 5. Ver resultados
+print(f"Percentil General: {report['overall_percentile']:.1f}")
+print(f"Resumen: {report['summary']}")
+print()
+
+# Detalles por métrica
+for metric, comparison in report['comparisons'].items():
+    print(f"{metric}:")
+    print(f"  Tu jugador: {comparison['player_value']}")
+    print(f"  Promedio PL: {comparison['benchmark_mean']}")
+    print(f"  Percentil: {comparison['percentile_rank']:.1f}")
+    print()
+```
+
+### Resultado Típico
+
+```
+Percentil General: 78.3
+Resumen: Jugador por encima del promedio. Fortalezas consistentes.
+
+distance:
+  Tu jugador: 12000.0
+  Promedio PL: 11500.0
+  Percentil: 78.5
+
+velocity:
+  Tu jugador: 10.5
+  Promedio PL: 10.0
+  Percentil: 80.0
+
+intensity:
+  Tu jugador: 82.0
+  Promedio PL: 80.0
+  Percentil: 75.0
+```
+
+**Interpretación**: Tu jugador es ÉLITE - Percentil 78 significa está en el top 22% de la Premier League.
+
+### Benchmarks Disponibles
+
+| Posición | Distancia | Vel. Máx | Intensidad |
+|----------|-----------|----------|-----------|
+| **GK** | 4,500 ± 800m | 7.8 ± 1.2 m/s | 60 ± 15% |
+| **DEF** | 9,800 ± 1,000m | 9.8 ± 1.1 m/s | 75 ± 10% |
+| **MID** | 11,500 ± 1,100m | 10.0 ± 1.0 m/s | 80 ± 9% |
+| **FWD** | 9,900 ± 1,000m | 10.2 ± 1.1 m/s | 75 ± 10.5% |
+
+### Guardar Reporte
+
+```python
+# Exportar comparación a JSON
+integrator.export_comparison_json(
+    player_data,
+    output_path="results/player_7_statsbomb.json"
+)
+
+# Ver archivo JSON
+import json
+with open("results/player_7_statsbomb.json") as f:
+    report_data = json.load(f)
+    print(json.dumps(report_data, indent=2))
+```
+
+### Analizar Equipo Completo
+
+```python
+# Comparar todos los jugadores del equipo
+team_comparisons = {}
+
+for player_id, player_stats in result.player_stats.items():
+    player_data = {
+        "player_id": player_id,
+        "player_name": player_stats.get("player_name", f"Player {player_id}"),
+        "position": player_stats.get("position", "MID"),
+        "distance_m": player_stats["distance_total_m"],
+        "max_velocity_m_s": player_stats["max_velocity_m_s"],
+        "intensity_percent": player_stats["movement_intensity_percent"]
+    }
+    
+    report = integrator.generate_comparison_report(player_data)
+    team_comparisons[player_id] = report["overall_percentile"]
+
+# Clasificar por percentil
+sorted_players = sorted(
+    team_comparisons.items(),
+    key=lambda x: x[1],
+    reverse=True
+)
+
+print("Ranking del Equipo (vs Premier League):")
+for rank, (player_id, percentile) in enumerate(sorted_players, 1):
+    print(f"{rank}. Jugador {player_id}: Percentil {percentile:.1f}")
+```
+
+### Categorías de Rendimiento
+
+- 🏆 **90-100:** Excepcional (Top 10% de la liga)
+- ⭐ **75-89:** Por encima del promedio (Muy bueno)
+- ✓ **50-74:** Promedio (Normal)
+- ⚠️ **25-49:** Por debajo del promedio (Necesita mejora)
+- 🔴 **0-24:** Muy bajo (Requiere atención)
+
+### Más Información
+
+Para detalles completos, lee: **[STATSBOMB_INTEGRATION.md](STATSBOMB_INTEGRATION.md)**
+
+---
+
 ## 🐛 Troubleshooting
 
 ### "ModuleNotFoundError"
