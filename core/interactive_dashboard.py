@@ -10,6 +10,9 @@ Características:
 - Comparativas entre jugadores
 - Heatmaps de posicionamiento
 - Filtros y búsqueda
+- Comparativas con estadísticas de liga (StatsBomb)
+- Radar charts profesionales
+- Insights automáticos
 - Responsivo para móvil/desktop
 """
 
@@ -19,6 +22,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
+import math
 
 import numpy as np
 
@@ -35,6 +39,323 @@ class DashboardConfig:
     height: int = 800
     include_heatmaps: bool = True
     include_comparatives: bool = True
+
+
+class ComparativeAnalyzer:
+    """Analizador de comparativas con estadísticas de liga (StatsBomb)."""
+
+    # Promedios de liga por posición (valores de referencia)
+    LEAGUE_AVERAGES = {
+        "distance_m": 10150,
+        "max_velocity_m_s": 8.5,
+        "avg_velocity_m_s": 6.0,
+        "movement_intensity_percent": 75.0,
+        "sprints_count": 10,
+    }
+
+    # TOP 10% de liga
+    TOP_10_PERCENTILE = {
+        "distance_m": 11200,
+        "max_velocity_m_s": 9.5,
+        "avg_velocity_m_s": 7.0,
+        "movement_intensity_percent": 85.0,
+        "sprints_count": 15,
+    }
+
+    @staticmethod
+    def calculate_percentile_ranking(value: float, league_avg: float, top_10: float) -> str:
+        """
+        Calcular ranking de percentil.
+
+        Args:
+            value: Valor del jugador
+            league_avg: Promedio de liga
+            top_10: Valor TOP 10%
+
+        Returns:
+            String con percentil (TOP 10%, TOP 25%, etc.)
+        """
+        if value >= top_10:
+            return "TOP 10%"
+        elif value >= league_avg + (top_10 - league_avg) * 0.75:
+            return "TOP 25%"
+        elif value >= league_avg + (top_10 - league_avg) * 0.50:
+            return "TOP 50%"
+        elif value >= league_avg:
+            return "ARRIBA PROMEDIO"
+        else:
+            return "BAJO PROMEDIO"
+
+    @staticmethod
+    def calculate_variance(value: float, reference: float) -> float:
+        """
+        Calcular varianza porcentual respecto a referencia.
+
+        Args:
+            value: Valor actual
+            reference: Valor de referencia
+
+        Returns:
+            Varianza en porcentaje
+        """
+        if reference == 0:
+            return 0.0
+        return ((value - reference) / reference) * 100
+
+    @staticmethod
+    def generate_player_comparison(
+        player_id: str,
+        player_stats: Dict,
+        position: str = "Mediocampista"
+    ) -> Dict:
+        """
+        Generar comparativa completa para un jugador.
+
+        Args:
+            player_id: ID del jugador
+            player_stats: Estadísticas del jugador
+            position: Posición del jugador
+
+        Returns:
+            Dict con comparativas
+        """
+        if not isinstance(player_stats, dict):
+            return {}
+
+        distance = player_stats.get("distance_total_m", 0)
+        max_vel = player_stats.get("max_velocity_m_s", 0)
+        avg_vel = player_stats.get("avg_velocity_m_s", 0)
+        intensity = player_stats.get("movement_intensity_percent", 0)
+        sprints = player_stats.get("sprints_count", 0)
+
+        return {
+            "player_id": player_id,
+            "position": position,
+            "metrics": {
+                "distance": {
+                    "value": distance,
+                    "unit": "km",
+                    "variance": ComparativeAnalyzer.calculate_variance(
+                        distance, ComparativeAnalyzer.LEAGUE_AVERAGES["distance_m"]
+                    ),
+                    "percentile": ComparativeAnalyzer.calculate_percentile_ranking(
+                        distance,
+                        ComparativeAnalyzer.LEAGUE_AVERAGES["distance_m"],
+                        ComparativeAnalyzer.TOP_10_PERCENTILE["distance_m"]
+                    ),
+                },
+                "max_velocity": {
+                    "value": max_vel,
+                    "unit": "m/s",
+                    "variance": ComparativeAnalyzer.calculate_variance(
+                        max_vel, ComparativeAnalyzer.LEAGUE_AVERAGES["max_velocity_m_s"]
+                    ),
+                    "percentile": ComparativeAnalyzer.calculate_percentile_ranking(
+                        max_vel,
+                        ComparativeAnalyzer.LEAGUE_AVERAGES["max_velocity_m_s"],
+                        ComparativeAnalyzer.TOP_10_PERCENTILE["max_velocity_m_s"]
+                    ),
+                },
+                "avg_velocity": {
+                    "value": avg_vel,
+                    "unit": "m/s",
+                    "variance": ComparativeAnalyzer.calculate_variance(
+                        avg_vel, ComparativeAnalyzer.LEAGUE_AVERAGES["avg_velocity_m_s"]
+                    ),
+                    "percentile": ComparativeAnalyzer.calculate_percentile_ranking(
+                        avg_vel,
+                        ComparativeAnalyzer.LEAGUE_AVERAGES["avg_velocity_m_s"],
+                        ComparativeAnalyzer.TOP_10_PERCENTILE["avg_velocity_m_s"]
+                    ),
+                },
+                "intensity": {
+                    "value": intensity,
+                    "unit": "%",
+                    "variance": ComparativeAnalyzer.calculate_variance(
+                        intensity, ComparativeAnalyzer.LEAGUE_AVERAGES["movement_intensity_percent"]
+                    ),
+                    "percentile": ComparativeAnalyzer.calculate_percentile_ranking(
+                        intensity,
+                        ComparativeAnalyzer.LEAGUE_AVERAGES["movement_intensity_percent"],
+                        ComparativeAnalyzer.TOP_10_PERCENTILE["movement_intensity_percent"]
+                    ),
+                },
+                "sprints": {
+                    "value": sprints,
+                    "unit": "",
+                    "variance": ComparativeAnalyzer.calculate_variance(
+                        sprints, ComparativeAnalyzer.LEAGUE_AVERAGES["sprints_count"]
+                    ),
+                    "percentile": ComparativeAnalyzer.calculate_percentile_ranking(
+                        sprints,
+                        ComparativeAnalyzer.LEAGUE_AVERAGES["sprints_count"],
+                        ComparativeAnalyzer.TOP_10_PERCENTILE["sprints_count"]
+                    ),
+                },
+            }
+        }
+
+    @staticmethod
+    def generate_team_insights(player_stats: Dict) -> List[str]:
+        """
+        Generar insights automáticos del equipo.
+
+        Args:
+            player_stats: Estadísticas de todos los jugadores
+
+        Returns:
+            Lista de insights
+        """
+        insights = []
+
+        if not player_stats:
+            return insights
+
+        # Calcular promedios
+        distances = []
+        intensities = []
+        sprints_list = []
+
+        for stats in player_stats.values():
+            if isinstance(stats, dict):
+                distances.append(stats.get("distance_total_m", 0))
+                intensities.append(stats.get("movement_intensity_percent", 0))
+                sprints_list.append(stats.get("sprints_count", 0))
+
+        if distances:
+            avg_distance = np.mean(distances)
+            variance = ComparativeAnalyzer.calculate_variance(
+                avg_distance, ComparativeAnalyzer.LEAGUE_AVERAGES["distance_m"]
+            )
+            if variance > 5:
+                insights.append(f"Tu equipo está {variance:.1f}% arriba del promedio de Liga en distancia")
+            elif variance < -5:
+                insights.append(f"Tu equipo está {abs(variance):.1f}% abajo del promedio de Liga en distancia")
+
+        if intensities:
+            avg_intensity = np.mean(intensities)
+            if avg_intensity > 80:
+                insights.append("Equipo con alta intensidad de juego (TOP 10% de Liga)")
+            elif avg_intensity > 75:
+                insights.append("Equipo con intensidad promedio-alta")
+
+        if sprints_list:
+            avg_sprints = np.mean(sprints_list)
+            top_sprinters = sum(1 for s in sprints_list if s > 12)
+            if top_sprinters > 0:
+                pct = (top_sprinters / len(sprints_list)) * 100
+                insights.append(f"{pct:.0f}% de jugadores con sprints TOP 25%")
+
+        return insights
+
+
+class RadarChartGenerator:
+    """Generador de gráficos radar en SVG."""
+
+    @staticmethod
+    def create_radar_svg(
+        player_value: Dict[str, float],
+        league_avg: Dict[str, float],
+        top_10: Dict[str, float],
+        width: int = 400,
+        height: int = 400
+    ) -> str:
+        """
+        Crear SVG de gráfico radar.
+
+        Args:
+            player_value: Valores del jugador (0-100)
+            league_avg: Promedio de liga (0-100)
+            top_10: TOP 10% (0-100)
+            width: Ancho del SVG
+            height: Alto del SVG
+
+        Returns:
+            SVG string
+        """
+        center_x = width / 2
+        center_y = height / 2
+        max_radius = min(width, height) / 2 - 40
+
+        categories = list(player_value.keys())
+        num_categories = len(categories)
+
+        svg = f'''<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg" style="background: white; border-radius: 8px;">'''
+
+        # Dibujar círculos de referencia
+        colors = ["#E0E0E0", "#B0B0B0", "#808080"]
+        for i, (radius_pct, color) in enumerate([(33, colors[0]), (67, colors[1]), (100, colors[2])]):
+            radius = (max_radius * radius_pct) / 100
+            svg += f'''<circle cx="{center_x}" cy="{center_y}" r="{radius}" fill="none" stroke="{color}" stroke-width="1" opacity="0.5"/>'''
+
+        # Dibujar ejes
+        for i in range(num_categories):
+            angle = (2 * math.pi * i) / num_categories - math.pi / 2
+            x = center_x + max_radius * math.cos(angle)
+            y = center_y + max_radius * math.sin(angle)
+            svg += f'''<line x1="{center_x}" y1="{center_y}" x2="{x}" y2="{y}" stroke="#CCC" stroke-width="1"/>'''
+
+        # Dibujar etiquetas
+        for i, category in enumerate(categories):
+            angle = (2 * math.pi * i) / num_categories - math.pi / 2
+            label_radius = max_radius + 30
+            x = center_x + label_radius * math.cos(angle)
+            y = center_y + label_radius * math.sin(angle)
+            label = category.replace("_", " ").title()
+            svg += f'''<text x="{x}" y="{y}" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">{label}</text>'''
+
+        # Dibujar polígono TOP 10%
+        points_top_10 = []
+        for i in range(num_categories):
+            angle = (2 * math.pi * i) / num_categories - math.pi / 2
+            value = top_10.get(categories[i], 0) / 100
+            radius = max_radius * value
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+            points_top_10.append(f"{x},{y}")
+
+        points_str = " ".join(points_top_10)
+        svg += f'''<polygon points="{points_str}" fill="#FFD700" opacity="0.15" stroke="#FFD700" stroke-width="2"/>'''
+
+        # Dibujar polígono promedio
+        points_avg = []
+        for i in range(num_categories):
+            angle = (2 * math.pi * i) / num_categories - math.pi / 2
+            value = league_avg.get(categories[i], 0) / 100
+            radius = max_radius * value
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+            points_avg.append(f"{x},{y}")
+
+        points_str = " ".join(points_avg)
+        svg += f'''<polygon points="{points_str}" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="2"/>'''
+
+        # Dibujar polígono jugador
+        points_player = []
+        for i in range(num_categories):
+            angle = (2 * math.pi * i) / num_categories - math.pi / 2
+            value = player_value.get(categories[i], 0) / 100
+            radius = max_radius * value
+            x = center_x + radius * math.cos(angle)
+            y = center_y + radius * math.sin(angle)
+            points_player.append(f"{x},{y}")
+
+        points_str = " ".join(points_player)
+        svg += f'''<polygon points="{points_str}" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="2"/>'''
+
+        # Leyenda
+        legend_y = height - 30
+        svg += f'''<rect x="20" y="{legend_y}" width="15" height="15" fill="#FF6B6B" opacity="0.3"/>'''
+        svg += f'''<text x="40" y="{legend_y + 12}" font-size="11" fill="#333">Tu Jugador</text>'''
+
+        svg += f'''<rect x="150" y="{legend_y}" width="15" height="15" fill="#4ECDC4" opacity="0.3"/>'''
+        svg += f'''<text x="170" y="{legend_y + 12}" font-size="11" fill="#333">Promedio Liga</text>'''
+
+        svg += f'''<rect x="300" y="{legend_y}" width="15" height="15" fill="#FFD700" opacity="0.3"/>'''
+        svg += f'''<text x="320" y="{legend_y + 12}" font-size="11" fill="#333">TOP 10%</text>'''
+
+        svg += '''</svg>'''
+        return svg
 
 
 class PitchVisualizer:
@@ -392,6 +713,11 @@ class DashboardGenerator:
         html_content += self._create_header()
         html_content += self._create_team_summary(team_summary)
         html_content += self._create_player_table(player_stats)
+
+        # Agregar sección de comparativas si está habilitada
+        if self.config.include_comparatives:
+            html_content += self._create_comparative_section(player_stats)
+
         html_content += self._create_charts(player_stats)
         html_content += self._create_footer()
 
@@ -571,6 +897,116 @@ class DashboardGenerator:
             height: 20px;
             border-radius: 3px;
         }}
+        .comparative-section {{
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }}
+        .comparative-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }}
+        .player-comparative {{
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }}
+        .player-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }}
+        .player-number {{
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }}
+        .position-badge {{
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }}
+        .metric-row {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }}
+        .metric-label {{
+            font-weight: 500;
+            color: #555;
+            flex: 1;
+        }}
+        .metric-value {{
+            font-weight: bold;
+            color: #333;
+            margin: 0 10px;
+        }}
+        .metric-status {{
+            font-size: 0.85em;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #f0f0f0;
+            color: #333;
+        }}
+        .status-positive {{
+            background: #d4edda;
+            color: #155724;
+        }}
+        .status-top {{
+            background: #fff3cd;
+            color: #856404;
+        }}
+        .status-negative {{
+            background: #f8d7da;
+            color: #721c24;
+        }}
+        .insight-card {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }}
+        .insight-icon {{
+            font-size: 1.5em;
+            margin-right: 10px;
+        }}
+        .radar-container {{
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }}
+        @media (max-width: 768px) {{
+            .comparative-grid {{
+                grid-template-columns: 1fr;
+            }}
+            .metric-row {{
+                flex-direction: column;
+                align-items: flex-start;
+            }}
+            .metric-status {{
+                margin-top: 5px;
+                width: 100%;
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -737,6 +1173,158 @@ class DashboardGenerator:
                 positions[num] = base_positions[num]
 
         return positions
+
+    def _create_comparative_section(self, player_stats: Dict) -> str:
+        """Crear sección de comparativa con liga."""
+        html = '''
+        <div class="section">
+            <div class="section-title">🏆 COMPARATIVA CON LIGA (StatsBomb)</div>
+        '''
+
+        # Agregar insights automáticos
+        analyzer = ComparativeAnalyzer()
+        insights = analyzer.generate_team_insights(player_stats)
+
+        if insights:
+            html += '<div class="insight-card" style="margin: 20px 0;">'
+            html += '<div style="font-weight: bold; margin-bottom: 10px;">📊 Insights Automáticos del Equipo</div>'
+            for insight in insights:
+                html += f'<div style="margin: 5px 0;">✓ {insight}</div>'
+            html += '</div>'
+
+        # Crear comparativas por jugador
+        html += '<div class="comparative-grid">'
+
+        for player_id, stats in sorted(player_stats.items()):
+            if not isinstance(stats, dict):
+                continue
+
+            comparison = analyzer.generate_player_comparison(str(player_id), stats)
+            if not comparison:
+                continue
+
+            player_num = player_id if isinstance(player_id, int) else player_id.split('_')[-1]
+            position = comparison.get("position", "Jugador")
+
+            html += f'''
+            <div class="player-comparative">
+                <div class="player-header">
+                    <div class="player-number">#{player_num}</div>
+                    <div class="position-badge">{position}</div>
+                </div>
+            '''
+
+            # Métrica: Distancia
+            distance_metric = comparison["metrics"]["distance"]
+            distance_status = "status-positive" if distance_metric["variance"] > 0 else "status-negative"
+            html += f'''
+                <div class="metric-row">
+                    <div class="metric-label">📏 Distancia</div>
+                    <div class="metric-value">{distance_metric["value"]:.1f} km</div>
+                    <div class="metric-status {distance_status}">{distance_metric["percentile"]} {distance_metric["variance"]:+.1f}%</div>
+                </div>
+            '''
+
+            # Métrica: Velocidad máxima
+            vel_metric = comparison["metrics"]["max_velocity"]
+            vel_status = "status-positive" if vel_metric["variance"] > 0 else "status-negative"
+            html += f'''
+                <div class="metric-row">
+                    <div class="metric-label">⚡ Vel. Máx</div>
+                    <div class="metric-value">{vel_metric["value"]:.2f} m/s</div>
+                    <div class="metric-status {vel_status}">{vel_metric["percentile"]}</div>
+                </div>
+            '''
+
+            # Métrica: Intensidad
+            intensity_metric = comparison["metrics"]["intensity"]
+            intensity_status = "status-top" if intensity_metric["value"] > 80 else "status-positive" if intensity_metric["value"] > 75 else "status-negative"
+            html += f'''
+                <div class="metric-row">
+                    <div class="metric-label">🔥 Intensidad</div>
+                    <div class="metric-value">{intensity_metric["value"]:.1f}%</div>
+                    <div class="metric-status {intensity_status}">{intensity_metric["percentile"]}</div>
+                </div>
+            '''
+
+            # Métrica: Sprints
+            sprints_metric = comparison["metrics"]["sprints"]
+            sprints_status = "status-positive" if sprints_metric["variance"] > 0 else "status-negative"
+            html += f'''
+                <div class="metric-row">
+                    <div class="metric-label">💨 Sprints</div>
+                    <div class="metric-value">{sprints_metric["value"]:.0f}</div>
+                    <div class="metric-status {sprints_status}">{sprints_metric["percentile"]}</div>
+                </div>
+            '''
+
+            html += '''</div>'''
+
+        html += '</div>'
+
+        # Agregar gráfico radar de comparativa
+        html += self._create_radar_comparison(player_stats)
+
+        html += '</div>'
+        return html
+
+    def _create_radar_comparison(self, player_stats: Dict) -> str:
+        """Crear gráfico radar comparativo."""
+        html = '<div style="margin-top: 40px;">'
+        html += '<h3 style="text-align: center; margin-bottom: 20px;">📊 Comparativa Visual - Radar de Rendimiento</h3>'
+
+        # Tomar los primeros 3 jugadores con mejor distancia
+        top_players = sorted(
+            [(pid, stats) for pid, stats in player_stats.items() if isinstance(stats, dict)],
+            key=lambda x: x[1].get("distance_total_m", 0),
+            reverse=True
+        )[:1]  # Solo el mejor jugador para no saturar
+
+        for player_id, stats in top_players:
+            player_num = player_id if isinstance(player_id, int) else str(player_id).split('_')[-1]
+
+            # Normalizar valores (0-100)
+            distance_norm = min(100, (stats.get("distance_total_m", 0) / 12000) * 100)
+            velocity_norm = min(100, (stats.get("max_velocity_m_s", 0) / 10) * 100)
+            intensity_norm = stats.get("movement_intensity_percent", 0)
+            sprints_norm = min(100, (stats.get("sprints_count", 0) / 20) * 100)
+            avg_vel_norm = min(100, (stats.get("avg_velocity_m_s", 0) / 8) * 100)
+
+            player_values = {
+                "distance": distance_norm,
+                "velocity": velocity_norm,
+                "intensity": intensity_norm,
+                "sprints": sprints_norm,
+                "avg_velocity": avg_vel_norm,
+            }
+
+            # Promedios normalizados
+            league_values = {
+                "distance": (ComparativeAnalyzer.LEAGUE_AVERAGES["distance_m"] / 12000) * 100,
+                "velocity": (ComparativeAnalyzer.LEAGUE_AVERAGES["max_velocity_m_s"] / 10) * 100,
+                "intensity": ComparativeAnalyzer.LEAGUE_AVERAGES["movement_intensity_percent"],
+                "sprints": (ComparativeAnalyzer.LEAGUE_AVERAGES["sprints_count"] / 20) * 100,
+                "avg_velocity": (ComparativeAnalyzer.LEAGUE_AVERAGES["avg_velocity_m_s"] / 8) * 100,
+            }
+
+            # TOP 10% normalizados
+            top_values = {
+                "distance": (ComparativeAnalyzer.TOP_10_PERCENTILE["distance_m"] / 12000) * 100,
+                "velocity": (ComparativeAnalyzer.TOP_10_PERCENTILE["max_velocity_m_s"] / 10) * 100,
+                "intensity": ComparativeAnalyzer.TOP_10_PERCENTILE["movement_intensity_percent"],
+                "sprints": (ComparativeAnalyzer.TOP_10_PERCENTILE["sprints_count"] / 20) * 100,
+                "avg_velocity": (ComparativeAnalyzer.TOP_10_PERCENTILE["avg_velocity_m_s"] / 8) * 100,
+            }
+
+            radar_svg = RadarChartGenerator.create_radar_svg(
+                player_values,
+                league_values,
+                top_values
+            )
+            html += f'<div class="radar-container">{radar_svg}</div>'
+
+        html += '</div>'
+        return html
 
     def _create_footer(self) -> str:
         """Crear pie de página."""
