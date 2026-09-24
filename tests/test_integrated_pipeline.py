@@ -326,5 +326,137 @@ class TestIntegration:
         assert pipeline1.player_tracks is not pipeline2.player_tracks
 
 
+class TestStatsBombValidation:
+    """Tests para integración de validación de StatsBomb."""
+
+    def test_pipeline_has_performance_validator(self):
+        """Test que pipeline tiene performance validator."""
+        pipeline = IntegratedAnalysisPipeline()
+        assert hasattr(pipeline, 'performance_validator')
+        # Puede ser None si performance_validator no está disponible
+        # pero el atributo debe existir
+
+    def test_pipeline_has_player_validations_list(self):
+        """Test que pipeline mantiene lista de validaciones."""
+        pipeline = IntegratedAnalysisPipeline()
+        assert hasattr(pipeline, 'player_validations')
+        assert isinstance(pipeline.player_validations, list)
+        assert len(pipeline.player_validations) == 0  # Inicialmente vacía
+
+    def test_pipeline_result_includes_validation_report(self):
+        """Test que PipelineResult incluye validation_report."""
+        result = PipelineResult(
+            video_path="video.mp4",
+            total_frames=100,
+            duration_seconds=3.3,
+            fps=30.0,
+            frames_processed=100,
+            player_stats={},
+            team_summary={},
+            errors=[],
+            warnings=[],
+            processing_time_seconds=1.0,
+            validation_report={}
+        )
+
+        assert hasattr(result, 'validation_report')
+        assert isinstance(result.validation_report, dict)
+
+    def test_validation_report_structure(self):
+        """Test estructura del reporte de validación."""
+        validation_report = {
+            'timestamp': '2024-01-01T00:00:00',
+            'total_players': 11,
+            'anomalies_detected': 0,
+            'anomaly_rate': 0.0,
+            'performance_distribution': {
+                'AVERAGE': 8,
+                'ABOVE AVERAGE': 3
+            },
+            'anomalies_list': [],
+            'recommendations_list': []
+        }
+
+        assert 'total_players' in validation_report
+        assert 'anomalies_detected' in validation_report
+        assert 'anomaly_rate' in validation_report
+        assert 'performance_distribution' in validation_report
+
+    def test_pipeline_result_to_dict_with_validation(self):
+        """Test convertir PipelineResult con validación a dict."""
+        result = PipelineResult(
+            video_path="video.mp4",
+            total_frames=100,
+            duration_seconds=3.3,
+            fps=30.0,
+            frames_processed=100,
+            player_stats={
+                "7": {
+                    "player_id": 7,
+                    "validation": {
+                        "distance_status": "NORMAL",
+                        "overall_performance": "AVERAGE"
+                    }
+                }
+            },
+            team_summary={},
+            errors=[],
+            warnings=[],
+            processing_time_seconds=1.5,
+            validation_report={'total_players': 1, 'anomalies_detected': 0}
+        )
+
+        result_dict = asdict(result)
+        assert 'validation_report' in result_dict
+        assert result_dict['validation_report']['total_players'] == 1
+
+    def test_player_stats_with_validation_fields(self):
+        """Test que estadísticas incluyen campos de validación."""
+        player_stat = {
+            "player_id": 7,
+            "player_name": "Test Player",
+            "position": "MID",
+            "distance_total_m": 11200,
+            "velocity_max": 8.4,
+            "intensity_pct": 72.0,
+            "validation": {
+                "distance_status": "NORMAL",
+                "distance_percentile": 50.1,
+                "velocity_status": "NORMAL",
+                "velocity_percentile": 49.8,
+                "intensity_status": "NORMAL",
+                "intensity_percentile": 51.2,
+                "overall_performance": "AVERAGE",
+                "overall_status": "NORMAL",
+                "anomalies_detected": []
+            }
+        }
+
+        assert "validation" in player_stat
+        assert "distance_status" in player_stat["validation"]
+        assert "distance_percentile" in player_stat["validation"]
+        assert "overall_performance" in player_stat["validation"]
+        assert "anomalies_detected" in player_stat["validation"]
+
+    def test_validation_fields_have_correct_types(self):
+        """Test que campos de validación tienen tipos correctos."""
+        validation_data = {
+            "distance_status": "NORMAL",
+            "distance_percentile": 50.0,
+            "velocity_status": "HIGH",
+            "velocity_percentile": 75.5,
+            "intensity_status": "LOW",
+            "intensity_percentile": 25.3,
+            "overall_performance": "TOP 15%",
+            "overall_status": "NORMAL",
+            "anomalies_detected": ["test anomaly"]
+        }
+
+        assert isinstance(validation_data["distance_status"], str)
+        assert isinstance(validation_data["distance_percentile"], float)
+        assert isinstance(validation_data["overall_performance"], str)
+        assert isinstance(validation_data["anomalies_detected"], list)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

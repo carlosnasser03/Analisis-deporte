@@ -39,6 +39,10 @@ from sports.common.view import ViewTransformer
 from sports.configs.soccer import SoccerPitchConfiguration
 from sports.annotators.soccer import draw_pitch, draw_points_on_pitch
 
+from core.bytetrack_adapter import ByteTrackAdapter
+from core.team_classifier_embeddings import EmbeddingTeamClassifier
+from core.ball_tracker import BallTracker
+
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 
@@ -48,8 +52,8 @@ ap.add_argument("video", nargs="?", default=str(DATA / "08fd33_0.mp4"),
                 help="Ruta del video a analizar")
 ap.add_argument("--device", default="intel:cpu",
                 help="intel:cpu | intel:gpu | intel:npu | cpu")
-ap.add_argument("--skip", type=int, default=2,
-                help="Procesar 1 de cada N frames")
+ap.add_argument("--skip", type=int, default=5,
+                help="Procesar 1 de cada N frames (defecto 5; mas alto = mas rapido)")
 ap.add_argument("--max-frames", type=int, default=None,
                 help="Limite de frames procesados")
 ap.add_argument("--no-open", action="store_true",
@@ -131,16 +135,17 @@ def team_feature(frame, box):
 
 # ---------------------- aprender equipos ------------------------------
 print(">> Aprendiendo equipos...")
-cols = []
+team_classifier = EmbeddingTeamClassifier(n_clusters=2)
 for idx, frame in enumerate(sv.get_video_frames_generator(VIDEO)):
     if idx % 10:
         continue
     res = player_model(frame, classes=pids, device=DEVICE, verbose=False)[0]
     d = sv.Detections.from_ultralytics(res)
-    cols += [team_feature(frame, b) for b in d.xyxy]
-    if len(cols) > 300:
-        break
-km = KMeans(n_clusters=2, n_init=10, random_state=0).fit(np.array(cols, dtype=np.float64))
+    if len(d.xyxy) > 0:
+        # TeamClassifierEmbeddings.train return value behavior matches TeamClassifier
+        team_classifier.train(d.xyxy.tolist(), frame)
+        if team_classifier.trained:
+            break
 TEAM_BGR = [(0, 0, 255), (255, 0, 0)]
 TEAM_SV = [sv.Color.RED, sv.Color.BLUE]
 
@@ -162,7 +167,8 @@ else:
     sink_info = sv.VideoInfo(width=info.width, height=info.height, fps=out_fps)
 radar_info = sv.VideoInfo(width=P_W, height=P_H, fps=out_fps)
 
-tracker = sv.ByteTrack(frame_rate=out_fps)
+tracker = ByteTrackAdapter(frame_rate=out_fps)
+ball_tracker = BallTracker(buffer_size=10, max_displacement_px=150.0, max_missing_frames=15)
 votos = defaultdict(lambda: [0, 0])
 data = defaultdict(lambda: {"dist": 0.0, "frames": 0, "vmax": 0.0,
                             "buf": deque(maxlen=5), "vbuf": deque(maxlen=5),
@@ -200,20 +206,51 @@ with contextlib.ExitStack() as stack:
         T_eff = T if T is not None else T_last   # usa la ultima cancha valida
 
         res = player_model(frame, classes=pids, device=DEVICE, verbose=False)[0]
-        d = sv.Detections.from_ultralytics(res)
-        d = tracker.update_with_detections(d)
+        d_raw = sv.Detections.from_ultralytics(res)
+        
+        cands_players = []
+        if len(d_raw) > 0:
+            # Fallback a 0 si d_raw.class_id es None
+            class_ids = d_raw.class_id if d_raw.class_id is not None else [0] * len(d_raw)
+            for box, conf, cls_id in zip(d_raw.xyxy, d_raw.confidence, class_ids):
+                cands_players.append({
+                    'bbox': box.tolist(),
+                    'confidence': float(conf),
+                    'class': int(cls_id)
+                })
+        
+        tracker.update(cands_players)
+        
+        if tracker.tracks:
+            xyxy = []
+            tracker_ids = []
+            for tid, tstate in tracker.tracks.items():
+                if tstate.time_since_update == 0:
+                    xyxy.append(tstate.bbox)
+                    tracker_ids.append(tid)
+            if xyxy:
+                d = sv.Detections(
+                    xyxy=np.array(xyxy, dtype=np.float32),
+                    tracker_id=np.array(tracker_ids, dtype=int)
+                )
+            else:
+                d = sv.Detections.empty()
+        else:
+            d = sv.Detections.empty()
         jugadores = []
         team_xy = [[], []]
         if len(d) > 0:
             feet = np.array([[(b[0] + b[2]) / 2, b[3]] for b in d.xyxy],
                             dtype=np.float32)
             pitch_cm = T_eff.transform_points(feet) if T_eff is not None else None
-            feats = np.array([team_feature(frame, b) for b in d.xyxy],
-                             dtype=np.float64)
-            inst = km.predict(feats)
+            inst_dict = team_classifier.classify(d.xyxy.tolist(), frame)
+            inst = inst_dict['team_assignments']
             tids = d.tracker_id if d.tracker_id is not None else [None] * len(d)
             for i, (box, ti, tid) in enumerate(zip(d.xyxy, inst, tids)):
-                equipo = int(np.argmax(votos[tid])) if tid is not None else ti
+                # Manejar el caso donde ti es None
+                if ti is None:
+                    continue
+                equipo = int(np.argmax(votos[tid])) if tid is not None else int(ti)
                 if tid is not None:
                     votos[tid][ti] += 1
                 x1, y1, x2, y2 = map(int, box)
@@ -242,14 +279,26 @@ with contextlib.ExitStack() as stack:
 
         bres = ball_model(frame, device=DEVICE, verbose=False)[0]
         db = sv.Detections.from_ultralytics(bres)
+        
+        cands = []
+        for box, conf in zip(db.xyxy, db.confidence):
+            cands.append({
+                'bbox': box.tolist(),
+                'confidence': float(conf)
+            })
+        
+        b_res = ball_tracker.update(cands)
+
         ball = None
         ball_cm = None
-        if len(db) > 0:
-            bx1, by1, bx2, by2 = map(int, db.xyxy[int(np.argmax(db.confidence))])
-            ball = ((bx1 + bx2) // 2, (by1 + by2) // 2)
-            cx = ball[0]
-            tri = np.array([[cx, by1], [cx - 10, by1 - 18], [cx + 10, by1 - 18]])
-            cv2.drawContours(out, [tri], 0, (0, 255, 255), -1)
+        if b_res['detected'] or b_res['interpolated']:
+            cx, cy = int(b_res['center'][0]), int(b_res['center'][1])
+            ball = (cx, cy)
+            
+            # Dibujar la predicción o interpolación de otro color
+            color_balon = (0, 165, 255) if b_res['interpolated'] else (0, 255, 255)
+            tri = np.array([[cx, cy - 8], [cx - 10, cy - 26], [cx + 10, cy - 26]])
+            cv2.drawContours(out, [tri], 0, color_balon, -1)
             if T_eff is not None:
                 raw_ball = T_eff.transform_points(
                     np.array([[ball[0], ball[1]]], dtype=np.float32))[0]
@@ -341,7 +390,10 @@ for tid, dd in data.items():
                   "Tiempo (s)": round(t, 1),
                   "Vel. prom (km/h)": round((dd["dist"] / t) * 3.6, 1) if t > 0 else 0,
                   "Vel. max (km/h)": round(dd["vmax"] * 3.6, 1)})
-df = pd.DataFrame(filas).sort_values("Distancia (m)", ascending=False).reset_index(drop=True)
+if not filas:
+    df = pd.DataFrame(columns=["Jugador (ID)", "Distancia (m)", "Tiempo (s)", "Vel. prom (km/h)", "Vel. max (km/h)"])
+else:
+    df = pd.DataFrame(filas).sort_values("Distancia (m)", ascending=False).reset_index(drop=True)
 df.to_csv(CSV, index=False)
 
 tot = sum(pos_frames) or 1

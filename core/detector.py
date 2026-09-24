@@ -8,6 +8,13 @@ import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
 from typing import Tuple, Dict, List, Optional
+import supervision as sv
+from .supervision_utils import (
+    filter_detections_by_confidence,
+    filter_detections_by_area,
+    get_box_dimensions,
+    annotate_detections
+)
 
 
 class BallDetector:
@@ -31,9 +38,73 @@ class BallDetector:
             'valid_detections': 0,
         }
 
+    def detect_candidates(self, frame: np.ndarray, min_confidence: float = 0.3) -> Tuple[List[Dict], Dict]:
+        """
+        Detecta el balón y devuelve todos los candidatos válidos.
+
+        Args:
+            frame (np.ndarray): Frame de video (H, W, 3)
+            min_confidence (float): Confianza mínima
+
+        Returns:
+            Tuple[List[Dict], Dict]: Lista de detecciones y dict de diagnósticos
+        """
+        results = self.model(frame, verbose=False, conf=min_confidence)
+
+        diagnostics = {
+            'raw_detections': 0,
+            'filtered_by_size': 0,
+            'filtered_by_confidence': 0,
+        }
+
+        if not results or len(results[0].boxes) == 0:
+            return [], diagnostics
+
+        self.detection_stats['total_detections'] += 1
+
+        # Convertir a sv.Detections para procesamiento uniforme
+        xyxy_list = results[0].boxes.xyxy.cpu().numpy()
+        conf_list = results[0].boxes.conf.cpu().numpy()
+
+        detections = sv.Detections(
+            xyxy=xyxy_list.astype(float),
+            confidence=conf_list.astype(float),
+            class_id=np.zeros(len(xyxy_list), dtype=int)
+        )
+
+        diagnostics['raw_detections'] = len(detections)
+
+        # Filtrar por confianza
+        detections = filter_detections_by_confidence(detections, min_confidence=min_confidence)
+
+        # Filtrar por tamaño
+        min_area = self.MIN_SIZE ** 2
+        max_area = self.MAX_SIZE ** 2
+        detections = filter_detections_by_area(detections, min_area=min_area, max_area=max_area)
+
+        diagnostics['filtered_by_size'] = diagnostics['raw_detections'] - len(detections)
+        self.detection_stats['size_filtered'] += diagnostics['filtered_by_size']
+
+        # Convertir de vuelta a dicts para compatibilidad
+        result_list = []
+        for xyxy, conf in zip(detections.xyxy, detections.confidence):
+            x1, y1, x2, y2 = xyxy
+            center_x = (x1 + x2) / 2
+            center_y = (y1 + y2) / 2
+            size = np.sqrt((x2 - x1) * (y2 - y1))
+
+            result_list.append({
+                'bbox': [x1, y1, x2, y2],
+                'center': [center_x, center_y],
+                'size': float(size),
+                'confidence': float(conf),
+            })
+
+        return result_list, diagnostics
+
     def detect(self, frame: np.ndarray, min_confidence: float = 0.3) -> Dict:
         """
-        Detecta el balón con filtros de tamaño
+        Detecta el balón con filtros de tamaño. Devuelve el candidato de mayor confianza.
 
         Args:
             frame (np.ndarray): Frame de video (H, W, 3)
@@ -49,59 +120,7 @@ class BallDetector:
                 'diagnostics': dict
             }
         """
-        results = self.model(frame, verbose=False, conf=min_confidence)
-
-        diagnostics = {
-            'raw_detections': 0,
-            'filtered_by_size': 0,
-            'filtered_by_confidence': 0,
-        }
-
-        if not results or len(results[0].boxes) == 0:
-            return {
-                'detected': False,
-                'bbox': None,
-                'center': None,
-                'size': None,
-                'confidence': None,
-                'diagnostics': diagnostics
-            }
-
-        self.detection_stats['total_detections'] += 1
-        diagnostics['raw_detections'] = len(results[0].boxes)
-
-        # Procesar detecciones
-        detections = []
-        for box in results[0].boxes:
-            x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-            conf = float(box.conf)
-
-            # Calcular tamaño
-            width = x2 - x1
-            height = y2 - y1
-            size = np.sqrt(width * height)
-
-            # Filtro de tamaño
-            if size < self.MIN_SIZE or size > self.MAX_SIZE:
-                self.detection_stats['size_filtered'] += 1
-                diagnostics['filtered_by_size'] += 1
-                continue
-
-            # Filtro de confianza adicional
-            if conf < min_confidence:
-                self.detection_stats['confidence_filtered'] += 1
-                diagnostics['filtered_by_confidence'] += 1
-                continue
-
-            center_x = (x1 + x2) / 2
-            center_y = (y1 + y2) / 2
-
-            detections.append({
-                'bbox': [x1, y1, x2, y2],
-                'center': [center_x, center_y],
-                'size': float(size),
-                'confidence': conf,
-            })
+        detections, diagnostics = self.detect_candidates(frame, min_confidence)
 
         # Retornar detección con mayor confianza
         if detections:
@@ -375,7 +394,8 @@ class UnifiedDetector:
 
         Returns:
             dict: {
-                'players': [...],
+                'players': [...],  # Lista de dicts bbox/confidence
+                'players_sv': sv.Detections,  # Formato Supervision
                 'ball': {...},
                 'pitch': {...},
                 'frame_shape': (H, W)
@@ -383,18 +403,29 @@ class UnifiedDetector:
         """
         h, w = frame.shape[:2]
 
-        # Detectar jugadores
+        # Detectar jugadores con sv.Detections
         results = self.player_model(frame, verbose=False, conf=player_conf)
-        players = []
+
+        players_sv = sv.Detections.empty()
         if results and len(results[0].boxes) > 0:
-            for box in results[0].boxes:
-                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
-                conf = float(box.conf)
-                players.append({
-                    'bbox': [float(x1), float(y1), float(x2), float(y2)],
-                    'confidence': conf,
-                    'class': int(box.cls) if box.cls is not None else 0,
-                })
+            xyxy = results[0].boxes.xyxy.cpu().numpy()
+            conf = results[0].boxes.conf.cpu().numpy()
+            cls = results[0].boxes.cls.cpu().numpy() if results[0].boxes.cls is not None else np.zeros(len(xyxy))
+
+            players_sv = sv.Detections(
+                xyxy=xyxy.astype(float),
+                confidence=conf.astype(float),
+                class_id=cls.astype(int)
+            )
+
+        # Convertir a formato dict para compatibilidad
+        players = []
+        for xyxy, conf, cls in zip(players_sv.xyxy, players_sv.confidence, players_sv.class_id):
+            players.append({
+                'bbox': [float(xyxy[0]), float(xyxy[1]), float(xyxy[2]), float(xyxy[3])],
+                'confidence': float(conf),
+                'class': int(cls),
+            })
 
         # Detectar balón
         ball = self.ball_detector.detect(frame, min_confidence=ball_conf)
@@ -404,6 +435,7 @@ class UnifiedDetector:
 
         return {
             'players': players,
+            'players_sv': players_sv,  # Nuevo: formato Supervision
             'ball': ball,
             'pitch': pitch,
             'frame_shape': (h, w),

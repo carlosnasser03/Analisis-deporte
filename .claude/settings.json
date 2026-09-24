@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python examples/supervision_improvements_example.py)"
+    ]
+  }
+}

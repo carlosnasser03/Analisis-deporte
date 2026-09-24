@@ -86,6 +86,94 @@ print(f"Resumen: {report['summary']}")
 
 ---
 
+## 🎯 Calibración Automática Adaptativa (NUEVA)
+
+**Disponible en FASE 6+ (2026-07-28):**
+
+### ¿Qué es?
+
+Un sistema **100% automático** que analiza las condiciones de tu video (brillo, desenfoque, clima) y ajusta automáticamente los parámetros de detección para máxima precisión.
+
+### Características
+
+- **Detección Automática** de condiciones (brillo, blur, oclusión, clima)
+- **Ajuste Inteligente** de parámetros según condiciones
+- **Sin Configuración Manual** necesaria
+- **100% Offline** - sin modelos externos
+- **Reporte Detallado** de todas las métricas y ajustes
+
+### Uso Rápido
+
+```python
+from core.adaptive_calibration import analyze_and_calibrate
+
+# Analizar video y obtener configuración optimizada
+metrics, config = analyze_and_calibrate("video.mp4")
+
+# Ver reporte
+print(config.quality_report)
+
+# Usar parámetros recomendados
+print(f"Threshold: {config.confidence_threshold}")
+print(f"GK Sensitivity: {config.gk_sensitivity}")
+print(f"Tracker Distance: {config.tracker_max_distance}")
+```
+
+### Ejemplo Real
+
+```python
+from core.adaptive_calibration import VideoQualityAnalyzer, AdaptiveCalibration
+
+# Analizar calidad
+analyzer = VideoQualityAnalyzer(sample_frames=10)
+metrics = analyzer.analyze_video("partido.mp4")
+
+print(f"Brillo: {metrics.brightness:.1f}/255")
+print(f"Desenfoque: {metrics.blur_level:.1%}")
+print(f"Calidad: {metrics.video_quality.value}")  # EXCELLENT, GOOD, FAIR, POOR
+
+# Calibrar automáticamente
+calibrator = AdaptiveCalibration()
+config = calibrator.get_optimal_config(metrics)
+
+# Aplicar en pipeline
+# pipeline.process("video.mp4", config)
+```
+
+### Documentación Completa
+
+- **[ADAPTIVE_CALIBRATION.md](ADAPTIVE_CALIBRATION.md)** - Guía completa (500+ líneas)
+  - Cómo funciona sin jerga técnica
+  - Tabla de ajustes por condición
+  - 5 ejemplos reales
+  - Troubleshooting
+  - Casos de uso
+
+- **[examples/adaptive_calibration_example.py](examples/adaptive_calibration_example.py)** - 5 ejemplos prácticos
+  - Análisis básico
+  - Flujo completo de calibración
+  - Diferentes condiciones
+  - Patrón de integración
+  - Comparación antes/después
+
+### Tests Incluidos
+
+- **30+ tests** cubriendo todas las funcionalidades
+- Detección de brillo, blur, oclusión, clima
+- Ajustes por condición
+- Validación de rangos
+- Generación de reportes
+- [tests/test_adaptive_calibration_comprehensive.py](tests/test_adaptive_calibration_comprehensive.py)
+
+### Casos de Uso
+
+✅ **Academias** - Análisis consistente en diferentes horarios  
+✅ **Scouts** - Adaptación a diferentes estadios  
+✅ **Ligas Amateurs** - Cualquier cancha y condición  
+✅ **Análisis de Archivo** - Videos históricos de diferente calidad  
+
+---
+
 ## ⚡ FASE 3: Optimización de Performance
 
 **Completada en FASE 3 (2026-07-06):**

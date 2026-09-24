@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Prueba - Comparativas</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 1.8em;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        table thead {
+            background: #667eea;
+            color: white;
+        }
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        table tbody tr:hover {
+            background: #f5f5f5;
+        }
+        .stat-card {
+            display: inline-block;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px;
+            min-width: 200px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-card .value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .footer {
+            background: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #e0e0e0;
+        }
+        .search-box {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        .search-box input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .search-box button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .search-box button:hover {
+            background: #764ba2;
+        }
+        .metric-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 2px;
+        }
+        svg {
+            display: block;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+        .pitch-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+        .comparative-section {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .comparative-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .player-comparative {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .player-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .position-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metric-label {
+            font-weight: 500;
+            color: #555;
+            flex: 1;
+        }
+        .metric-value {
+            font-weight: bold;
+            color: #333;
+            margin: 0 10px;
+        }
+        .metric-status {
+            font-size: 0.85em;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #f0f0f0;
+            color: #333;
+        }
+        .status-positive {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-top {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .insight-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .insight-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        .radar-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        @media (max-width: 768px) {
+            .comparative-grid {
+                grid-template-columns: 1fr;
+            }
+            .metric-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .metric-status {
+                margin-top: 5px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h1>⚽ Dashboard de Prueba - Comparativas</h1>
+            <p>Scout Analytics</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Generado: 28/07/2026 08:47:25</p>
+        </div>
+<div class="section"><div class="section-title">📊 Resumen del Equipo</div>
+                <div class="stat-card">
+                    <div class="label">Jugadores</div>
+                    <div class="value">11</div>
+                    <div style="font-size: 0.8em; color: #999;"></div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Distancia Promedio</div>
+                    <div class="value">10500.3</div>
+                    <div style="font-size: 0.8em; color: #999;">m</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Intensidad Promedio</div>
+                    <div class="value">79.6</div>
+                    <div style="font-size: 0.8em; color: #999;">%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="label">Sprints Totales</div>
+                    <div class="value">95</div>
+                    <div style="font-size: 0.8em; color: #999;"></div>
+                </div>
+</div>
+        <div class="section">
+            <div class="section-title">👥 Estadísticas de Jugadores</div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar jugador..." onkeyup="filterTable()">
+                <button onclick="filterTable()">Buscar</button>
+            </div>
+            <table id="playerTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Distancia (m)</th>
+                        <th>Vel. Max (m/s)</th>
+                        <th>Vel. Prom (m/s)</th>
+                        <th>Intensidad (%)</th>
+                        <th>Sprints</th>
+                        <th>Cambios Dir.</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    <tr>
+                        <td><b>10</b></td>
+                        <td>9800</td>
+                        <td>8.90</td>
+                        <td>6.20</td>
+                        <td><span class="metric-badge">75.2%</span></td>
+                        <td>10</td>
+                        <td>42</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>4</b></td>
+                        <td>11200</td>
+                        <td>9.80</td>
+                        <td>7.10</td>
+                        <td><span class="metric-badge">85.1%</span></td>
+                        <td>15</td>
+                        <td>52</td>
+                    </tr>
+
+                    <tr>
+                        <td><b>7</b></td>
+                        <td>10500</td>
+                        <td>9.20</td>
+                        <td>6.50</td>
+                        <td><span class="metric-badge">78.5%</span></td>
+                        <td>12</td>
+                        <td>45</td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-title">🏆 COMPARATIVA CON LIGA (StatsBomb)</div>
+        <div class="insight-card" style="margin: 20px 0;"><div style="font-weight: bold; margin-bottom: 10px;">📊 Insights Automáticos del Equipo</div><div style="margin: 5px 0;">✓ Equipo con intensidad promedio-alta</div><div style="margin: 5px 0;">✓ 33% de jugadores con sprints TOP 25%</div></div><div class="comparative-grid">
+            <div class="player-comparative">
+                <div class="player-header">
+                    <div class="player-number">#10</div>
+                    <div class="position-badge">Mediocampista</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">📏 Distancia</div>
+                    <div class="metric-value">9800.3 km</div>
+                    <div class="metric-status status-negative">BAJO PROMEDIO -3.4%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">⚡ Vel. Máx</div>
+                    <div class="metric-value">8.90 m/s</div>
+                    <div class="metric-status status-positive">ARRIBA PROMEDIO</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">🔥 Intensidad</div>
+                    <div class="metric-value">75.2%</div>
+                    <div class="metric-status status-positive">ARRIBA PROMEDIO</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">💨 Sprints</div>
+                    <div class="metric-value">10</div>
+                    <div class="metric-status status-negative">ARRIBA PROMEDIO</div>
+                </div>
+            </div>
+            <div class="player-comparative">
+                <div class="player-header">
+                    <div class="player-number">#4</div>
+                    <div class="position-badge">Mediocampista</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">📏 Distancia</div>
+                    <div class="metric-value">11200.2 km</div>
+                    <div class="metric-status status-positive">TOP 10% +10.3%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">⚡ Vel. Máx</div>
+                    <div class="metric-value">9.80 m/s</div>
+                    <div class="metric-status status-positive">TOP 10%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">🔥 Intensidad</div>
+                    <div class="metric-value">85.1%</div>
+                    <div class="metric-status status-top">TOP 10%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">💨 Sprints</div>
+                    <div class="metric-value">15</div>
+                    <div class="metric-status status-positive">TOP 10%</div>
+                </div>
+            </div>
+            <div class="player-comparative">
+                <div class="player-header">
+                    <div class="player-number">#7</div>
+                    <div class="position-badge">Mediocampista</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">📏 Distancia</div>
+                    <div class="metric-value">10500.5 km</div>
+                    <div class="metric-status status-positive">ARRIBA PROMEDIO +3.5%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">⚡ Vel. Máx</div>
+                    <div class="metric-value">9.20 m/s</div>
+                    <div class="metric-status status-positive">TOP 50%</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">🔥 Intensidad</div>
+                    <div class="metric-value">78.5%</div>
+                    <div class="metric-status status-positive">ARRIBA PROMEDIO</div>
+                </div>
+            
+                <div class="metric-row">
+                    <div class="metric-label">💨 Sprints</div>
+                    <div class="metric-value">12</div>
+                    <div class="metric-status status-positive">ARRIBA PROMEDIO</div>
+                </div>
+            </div></div><div style="margin-top: 40px;"><h3 style="text-align: center; margin-bottom: 20px;">📊 Comparativa Visual - Radar de Rendimiento</h3><div class="radar-container"><svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="background: white; border-radius: 8px;"><circle cx="200.0" cy="200.0" r="52.8" fill="none" stroke="#E0E0E0" stroke-width="1" opacity="0.5"/><circle cx="200.0" cy="200.0" r="107.2" fill="none" stroke="#B0B0B0" stroke-width="1" opacity="0.5"/><circle cx="200.0" cy="200.0" r="160.0" fill="none" stroke="#808080" stroke-width="1" opacity="0.5"/><line x1="200.0" y1="200.0" x2="200.0" y2="40.0" stroke="#CCC" stroke-width="1"/><line x1="200.0" y1="200.0" x2="352.1690426072246" y2="150.5572809000084" stroke="#CCC" stroke-width="1"/><line x1="200.0" y1="200.0" x2="294.04564036679574" y2="329.44271909999156" stroke="#CCC" stroke-width="1"/><line x1="200.0" y1="200.0" x2="105.95435963320432" y2="329.44271909999156" stroke="#CCC" stroke-width="1"/><line x1="200.0" y1="200.0" x2="47.83095739277542" y2="150.55728090000844" stroke="#CCC" stroke-width="1"/><text x="200.0" y="10.0" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">Distance</text><text x="380.70073809607914" y="141.28677106876" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">Velocity</text><text x="311.6791979355699" y="353.71322893124" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">Intensity</text><text x="88.32080206443013" y="353.71322893124" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">Sprints</text><text x="19.299261903920808" y="141.28677106876" text-anchor="middle" dy="0.3em" font-size="11" fill="#333">Avg Velocity</text><polygon points="200.0,50.666666666666686 344.56059047686335,153.02941685500798 279.93879431177635,310.0263112349928 129.46576972490323,297.08203932499373 66.85208771867849,156.73762078750738" fill="#FFD700" opacity="0.15" stroke="#FFD700" stroke-width="2"/><polygon points="200.0,64.66666666666666 329.3436862161409,157.97368876500715 270.5342302750968,297.08203932499373 152.97717981660216,264.7213595499958 85.87321804458156,162.91796067500633" fill="#4ECDC4" opacity="0.15" stroke="#4ECDC4" stroke-width="2"/><polygon points="200.0,50.66399999999999 349.12566175508005,151.54613528200824 280.03283995214315,310.15575395409286 129.46576972490323,297.08203932499373 64.94997468608818,156.1195867987575" fill="#FF6B6B" opacity="0.2" stroke="#FF6B6B" stroke-width="2"/><rect x="20" y="370" width="15" height="15" fill="#FF6B6B" opacity="0.3"/><text x="40" y="382" font-size="11" fill="#333">Tu Jugador</text><rect x="150" y="370" width="15" height="15" fill="#4ECDC4" opacity="0.3"/><text x="170" y="382" font-size="11" fill="#333">Promedio Liga</text><rect x="300" y="370" width="15" height="15" fill="#FFD700" opacity="0.3"/><text x="320" y="382" font-size="11" fill="#333">TOP 10%</text></svg></div></div></div><div class="section"><div class="section-title">📈 Gráficos Comparativos</div><div class="chart-container"><h3 style="margin-bottom: 15px;">⚽ Mapa del Campo - Distribución Táctica</h3><svg width="800"
+                       height="520"
+                       viewBox="0 0 800 520"
+                       xmlns="http://www.w3.org/2000/svg"
+                       style="border: 2px solid #333; background: #2d5016;">
+        <!-- Línea central vertical -->
+        <line x1="400.0" y1="0" x2="400.0" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Línea de meta -->
+        <line x1="0" y1="0" x2="800" y2="0" stroke="white" stroke-width="2"/>
+        <line x1="0" y1="520" x2="800" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Líneas laterales -->
+        <line x1="0" y1="0" x2="0" y2="520" stroke="white" stroke-width="2"/>
+        <line x1="800" y1="0" x2="800" y2="520" stroke="white" stroke-width="2"/>
+
+        <!-- Círculo central -->
+        <circle cx="400.0" cy="260.0" r="40" fill="none" stroke="white" stroke-width="1"/>
+        <circle cx="400.0" cy="260.0" r="3" fill="white"/>
+
+        <!-- Área de penalti izquierda -->
+        <rect x="0" y="114.4" width="40" height="291.20000000000005" fill="none" stroke="white" stroke-width="1"/>
+        <rect x="0" y="187.2" width="15" height="145.60000000000002" fill="none" stroke="white" stroke-width="1"/>
+
+        <!-- Área de penalti derecha -->
+        <rect x="760" y="114.4" width="40" height="291.20000000000005" fill="none" stroke="white" stroke-width="1"/>
+        <rect x="785" y="187.2" width="15" height="145.60000000000002" fill="none" stroke="white" stroke-width="1"/>
+        
+            <circle cx="450" cy="150" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="450" y="150" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">7</text>
+            
+            <circle cx="600" cy="200" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="600" y="200" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">10</text>
+            
+            <circle cx="250" cy="200" r="12" fill="#FF6B6B" stroke="white" stroke-width="2"/>
+            <text x="250" y="200" text-anchor="middle" dy="0.3em"
+                  fill="white" font-size="10" font-weight="bold">4</text>
+            </svg><p style="font-size: 0.9em; color: #666; margin-top: 10px;">Rojo: Posiciones de máxima actividad | Azul: Áreas de menor uso</p></div><div class="chart-container"><p>Plotly no instalado. Instala: pip install plotly</p></div><div class="chart-container"><p>Plotly no instalado</p></div><div class="chart-container"><p>Plotly no instalado</p></div></div>
+        <div class="footer">
+            <p>© 2026 Scout AI - Análisis Profesional de Fútbol</p>
+            <p>Dashboard generado automáticamente por el sistema de análisis</p>
+        </div>
+    </div>
+    <script>
+        function filterTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const table = document.getElementById('playerTable');
+            const rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let match = false;
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toUpperCase().indexOf(filter) > -1) {
+                        match = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = match ? '' : 'none';
+            }
+        }
+    </script>
+</body>
+</html>

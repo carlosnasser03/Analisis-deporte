@@ -70,6 +70,27 @@ except ImportError:
     ComparisonLevel = None
     StatsBombData = None
 
+try:
+    from .adaptive_calibration import (
+        VideoQualityAnalyzer,
+        AdaptiveCalibration,
+        VideoQualityMetrics,
+        ProcessingConfig,
+        VideoQuality,
+        LightingCondition,
+        WeatherCondition,
+        analyze_and_calibrate,
+    )
+except ImportError:
+    VideoQualityAnalyzer = None
+    AdaptiveCalibration = None
+    VideoQualityMetrics = None
+    ProcessingConfig = None
+    VideoQuality = None
+    LightingCondition = None
+    WeatherCondition = None
+    analyze_and_calibrate = None
+
 __version__ = "3.0"
 
 __all__ = [
@@ -98,4 +119,12 @@ __all__ = [
     'ComparisonResult',
     'ComparisonLevel',
     'StatsBombData',
+    'VideoQualityAnalyzer',
+    'AdaptiveCalibration',
+    'VideoQualityMetrics',
+    'ProcessingConfig',
+    'VideoQuality',
+    'LightingCondition',
+    'WeatherCondition',
+    'analyze_and_calibrate',
 ]

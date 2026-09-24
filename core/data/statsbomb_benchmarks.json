@@ -1,0 +1,138 @@
+{
+  "goalkeeper": {
+    "distance": {
+      "mean": 4200.0,
+      "std": 600.0,
+      "min": 2800.0,
+      "max": 6500.0,
+      "median": 4150.0,
+      "sample_size": 0
+    },
+    "max_velocity": {
+      "mean": 6.5,
+      "std": 1.2,
+      "min": 4.0,
+      "max": 9.5,
+      "median": 6.3,
+      "sample_size": 0
+    },
+    "sprint_count": {
+      "mean": 2.0,
+      "std": 1.5,
+      "min": 0.0,
+      "max": 8.0,
+      "median": 1.5,
+      "sample_size": 0
+    },
+    "intensity_score": {
+      "mean": 35.0,
+      "std": 12.0,
+      "min": 15.0,
+      "max": 70.0,
+      "median": 34.0,
+      "sample_size": 0
+    }
+  },
+  "defender": {
+    "distance": {
+      "mean": 9800.0,
+      "std": 1200.0,
+      "min": 7000.0,
+      "max": 13500.0,
+      "median": 9750.0,
+      "sample_size": 0
+    },
+    "max_velocity": {
+      "mean": 8.2,
+      "std": 0.9,
+      "min": 6.0,
+      "max": 10.5,
+      "median": 8.1,
+      "sample_size": 0
+    },
+    "sprint_count": {
+      "mean": 8.5,
+      "std": 2.8,
+      "min": 2.0,
+      "max": 18.0,
+      "median": 8.0,
+      "sample_size": 0
+    },
+    "intensity_score": {
+      "mean": 62.0,
+      "std": 10.0,
+      "min": 35.0,
+      "max": 85.0,
+      "median": 62.0,
+      "sample_size": 0
+    }
+  },
+  "midfielder": {
+    "distance": {
+      "mean": 10800.0,
+      "std": 1400.0,
+      "min": 7500.0,
+      "max": 14500.0,
+      "median": 10850.0,
+      "sample_size": 0
+    },
+    "max_velocity": {
+      "mean": 8.8,
+      "std": 1.0,
+      "min": 6.5,
+      "max": 11.5,
+      "median": 8.8,
+      "sample_size": 0
+    },
+    "sprint_count": {
+      "mean": 10.2,
+      "std": 3.2,
+      "min": 3.0,
+      "max": 22.0,
+      "median": 10.0,
+      "sample_size": 0
+    },
+    "intensity_score": {
+      "mean": 68.0,
+      "std": 9.5,
+      "min": 40.0,
+      "max": 90.0,
+      "median": 68.0,
+      "sample_size": 0
+    }
+  },
+  "forward": {
+    "distance": {
+      "mean": 9500.0,
+      "std": 1600.0,
+      "min": 5500.0,
+      "max": 13500.0,
+      "median": 9600.0,
+      "sample_size": 0
+    },
+    "max_velocity": {
+      "mean": 9.2,
+      "std": 1.1,
+      "min": 7.0,
+      "max": 12.0,
+      "median": 9.2,
+      "sample_size": 0
+    },
+    "sprint_count": {
+      "mean": 9.8,
+      "std": 3.5,
+      "min": 2.0,
+      "max": 20.0,
+      "median": 9.5,
+      "sample_size": 0
+    },
+    "intensity_score": {
+      "mean": 71.0,
+      "std": 11.0,
+      "min": 38.0,
+      "max": 92.0,
+      "median": 71.0,
+      "sample_size": 0
+    }
+  }
+}

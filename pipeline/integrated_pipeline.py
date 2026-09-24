@@ -56,6 +56,17 @@ try:
 except ImportError:
     PlayerStatsAggregator = None
 
+try:
+    from core.performance_validator import PerformanceValidator
+except ImportError:
+    PerformanceValidator = None
+
+try:
+    from core.adaptive_calibration import VideoQualityAnalyzer, AdaptiveCalibration
+except ImportError:
+    VideoQualityAnalyzer = None
+    AdaptiveCalibration = None
+
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +80,7 @@ class ProcessingConfig:
     field_width_m: float = 68.0
     confidence_threshold: float = 0.5
     min_track_length: int = 5
+    tracker_max_distance: float = 50.0
 
 
 @dataclass
@@ -94,6 +106,9 @@ class PipelineResult:
     errors: List[str]
     warnings: List[str]
     processing_time_seconds: float
+    validation_report: Dict = None
+    quality_metrics: Dict = None
+    adaptive_config: Dict = None
 
 
 class IntegratedAnalysisPipeline:
@@ -136,9 +151,21 @@ class IntegratedAnalysisPipeline:
             ) if HeatmapManager and HeatmapConfig else None
         )
 
+        # Inicializar analizadores de calibración adaptativa
+        self.quality_analyzer = VideoQualityAnalyzer() if VideoQualityAnalyzer else None
+        self.adaptive_calibration = AdaptiveCalibration if AdaptiveCalibration else None
+
         self.player_tracks = defaultdict(list)
         self.errors = []
         self.warnings = []
+        self.performance_validator = (
+            PerformanceValidator() if PerformanceValidator else None
+        )
+        self.player_validations = []  # Almacenar validaciones de cada jugador
+
+        # Almacenar métricas de calibración
+        self.quality_metrics = None
+        self.applied_adaptive_config = None
 
     def process_video(self, video_path: str, output_dir: Optional[str] = None) -> PipelineResult:
         """
@@ -171,6 +198,63 @@ class IntegratedAnalysisPipeline:
 
         logger.info(f"Video: {total_frames} frames @ {fps} fps ({duration_seconds:.1f}s)")
 
+        # FASE 6: Análisis de calidad y calibración adaptativa
+        quality_analysis_time = 0
+        if self.quality_analyzer:
+            try:
+                import time as time_module
+                quality_start = time_module.time()
+
+                # Analizar calidad del video
+                quality_metrics_result = self.quality_analyzer.analyze_video(str(video_path))
+
+                if quality_metrics_result:
+                    # Almacenar métricas en formato de diccionario
+                    self.quality_metrics = quality_metrics_result.to_dict() if hasattr(
+                        quality_metrics_result, 'to_dict'
+                    ) else quality_metrics_result
+
+                    # Obtener configuración optimizada
+                    if self.adaptive_calibration:
+                        calibrator = self.adaptive_calibration()
+                        processing_config = calibrator.get_optimal_config(quality_metrics_result)
+
+                        # Almacenar configuración adaptativa
+                        self.applied_adaptive_config = {
+                            'confidence_threshold': processing_config.confidence_threshold,
+                            'tracker_max_distance': processing_config.tracker_max_distance,
+                            'skip_frames': processing_config.skip_frames,
+                            'use_motion_blur': processing_config.use_motion_blur,
+                            'gk_sensitivity': processing_config.gk_sensitivity,
+                            'quality_report': processing_config.quality_report,
+                        }
+
+                        # Aplicar ajustes a la configuración del pipeline
+                        self.config.confidence_threshold = processing_config.confidence_threshold
+                        self.config.tracker_max_distance = processing_config.tracker_max_distance
+                        # min_track_length se ajusta basado en skip_frames
+                        if processing_config.skip_frames > 2:
+                            self.config.min_track_length = max(2, self.config.min_track_length - 1)
+
+                        # Registrar ajustes aplicados
+                        quality_str = self.quality_metrics.get('video_quality', 'UNKNOWN')
+                        if hasattr(quality_str, 'value'):
+                            quality_str = quality_str.value
+
+                        logger.info(f"Video quality: {quality_str}")
+                        logger.info(f"Applied adaptive adjustments:")
+                        logger.info(f"  - Confidence threshold: {self.config.confidence_threshold:.2f}")
+                        logger.info(f"  - Tracker max distance: {self.config.tracker_max_distance:.0f}px")
+                        logger.info(f"  - Skip frames: {processing_config.skip_frames}")
+                        logger.info(processing_config.quality_report)
+
+                quality_analysis_time = time_module.time() - quality_start
+                logger.info(f"Quality analysis completed in {quality_analysis_time:.2f}s")
+
+            except Exception as e:
+                self.warnings.append(f"Error durante análisis de calidad: {str(e)}")
+                logger.warning(f"Quality analysis failed: {str(e)}")
+
         frame_idx = 0
         frame_results = []
 
@@ -201,6 +285,17 @@ class IntegratedAnalysisPipeline:
         player_stats = self._aggregate_player_stats()
         team_summary = self.stats_aggregator.get_team_summary()
 
+        # Generar reporte de validación
+        validation_report = None
+        if self.performance_validator and self.player_validations:
+            validation_report = self.performance_validator.generate_validation_report(
+                self.player_validations
+            )
+            logger.info(
+                f"Validación completada: {len(self.player_validations)} jugadores, "
+                f"{validation_report['anomalies_detected']} anomalías detectadas"
+            )
+
         # Crear resultado
         processing_time = time.time() - start_time
 
@@ -214,7 +309,10 @@ class IntegratedAnalysisPipeline:
             team_summary=team_summary,
             errors=self.errors,
             warnings=self.warnings,
-            processing_time_seconds=processing_time
+            processing_time_seconds=processing_time,
+            validation_report=validation_report or {},
+            quality_metrics=self.quality_metrics or {},
+            adaptive_config=self.applied_adaptive_config or {}
         )
 
         # Exportar si se especifica output_dir
@@ -295,7 +393,7 @@ class IntegratedAnalysisPipeline:
         return None
 
     def _aggregate_player_stats(self) -> Dict:
-        """Agregar estadísticas por jugador."""
+        """Agregar estadísticas por jugador con validación de StatsBomb."""
         player_stats = {}
 
         for player_id, tracks in self.player_tracks.items():
@@ -340,7 +438,43 @@ class IntegratedAnalysisPipeline:
                     }
                 )
 
-                player_stats[str(player_id)] = asdict(stats)
+                # Generar validación contra benchmarks de StatsBomb
+                validation = None
+                validation_data = {}
+                if self.performance_validator:
+                    validation = self.performance_validator.generate_comparison(
+                        player_id=player_id,
+                        player_name=f"Player {player_id}",
+                        position=stats.position,
+                        distance_m=stats.distance_total_m,
+                        max_velocity_m_s=stats.velocity_max,
+                        intensity_pct=stats.intensity_pct
+                    )
+                    self.player_validations.append(validation)
+
+                    # Construir diccionario de validación
+                    validation_data = {
+                        'distance_status': validation.metrics.get('distance').status,
+                        'distance_percentile': round(
+                            validation.metrics.get('distance').percentile, 1
+                        ),
+                        'velocity_status': validation.metrics.get('max_velocity').status,
+                        'velocity_percentile': round(
+                            validation.metrics.get('max_velocity').percentile, 1
+                        ),
+                        'intensity_status': validation.metrics.get('intensity').status,
+                        'intensity_percentile': round(
+                            validation.metrics.get('intensity').percentile, 1
+                        ),
+                        'overall_performance': validation.performance_level,
+                        'overall_status': validation.overall_status,
+                        'anomalies_detected': validation.anomalies_detected,
+                    }
+
+                # Agregar al resultado
+                stats_dict = asdict(stats)
+                stats_dict['validation'] = validation_data
+                player_stats[str(player_id)] = stats_dict
 
             except Exception as e:
                 self.warnings.append(f"Error analizando jugador {player_id}: {str(e)}")
