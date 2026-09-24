@@ -67,6 +67,99 @@ class TestPipelineInitialization:
         assert pipeline.player_tracks is not None
 
 
+class TestDetectorInitialization:
+    """Tests para inicialización del detector unificado."""
+
+    def test_detector_attribute_exists(self):
+        """Test que detector attribute existe."""
+        pipeline = IntegratedAnalysisPipeline()
+        assert hasattr(pipeline, 'detector')
+
+    def test_detector_init_method_exists(self):
+        """Test que método _initialize_detector existe."""
+        pipeline = IntegratedAnalysisPipeline()
+        assert hasattr(pipeline, '_initialize_detector')
+        assert callable(pipeline._initialize_detector)
+
+    def test_detector_is_not_none_if_models_exist(self):
+        """Test que detector se inicializa si los modelos existen."""
+        pipeline = IntegratedAnalysisPipeline()
+        # Si los modelos existen, detector no debe ser None
+        from pathlib import Path
+        base_dir = Path(__file__).parent.parent / "data"
+        player_model = base_dir / "football-player-detection.pt"
+        ball_model = base_dir / "football-ball-detection.pt"
+        pitch_model = base_dir / "football-pitch-detection.pt"
+
+        all_models_exist = all([
+            player_model.exists(),
+            ball_model.exists(),
+            pitch_model.exists()
+        ])
+
+        if all_models_exist:
+            # Si todos los modelos existen, detector debe estar inicializado
+            assert pipeline.detector is not None, (
+                "Detector debería estar inicializado si los modelos existen"
+            )
+
+    def test_detector_has_detect_frame_method(self):
+        """Test que detector tiene método detect_frame."""
+        pipeline = IntegratedAnalysisPipeline()
+        if pipeline.detector is not None:
+            assert hasattr(pipeline.detector, 'detect_frame')
+            assert callable(pipeline.detector.detect_frame)
+
+    def test_detector_detect_frame_with_dummy_frame(self):
+        """Test que detector.detect_frame() funciona con frame dummy."""
+        pipeline = IntegratedAnalysisPipeline()
+
+        if pipeline.detector is None:
+            pytest.skip("Detector no inicializado - modelos pueden no estar disponibles")
+
+        # Crear frame dummy (720x1280x3)
+        dummy_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+
+        # Llamar detect_frame
+        result = pipeline.detector.detect_frame(dummy_frame)
+
+        # Validar estructura de resultado
+        assert isinstance(result, dict)
+        assert 'players' in result
+        assert 'ball' in result
+        assert 'pitch' in result
+        assert 'frame_shape' in result
+
+        # Validar tipos
+        assert isinstance(result['players'], list)
+        assert isinstance(result['ball'], dict)
+        assert isinstance(result['pitch'], dict)
+        assert result['frame_shape'] == (720, 1280)
+
+    def test_detector_detect_frame_returns_valid_structure(self):
+        """Test que detect_frame retorna estructura válida."""
+        pipeline = IntegratedAnalysisPipeline()
+
+        if pipeline.detector is None:
+            pytest.skip("Detector no inicializado")
+
+        dummy_frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+        result = pipeline.detector.detect_frame(dummy_frame)
+
+        # Validar estructura de ball
+        ball = result['ball']
+        assert 'detected' in ball
+        assert 'bbox' in ball
+        assert 'center' in ball
+        assert 'confidence' in ball
+
+        # Validar estructura de pitch
+        pitch = result['pitch']
+        assert 'corners' in pitch
+        assert 'valid' in pitch
+        assert isinstance(pitch['valid'], bool)
+
+
 class TestFrameProcessing:
     """Tests para procesamiento de frames."""
 

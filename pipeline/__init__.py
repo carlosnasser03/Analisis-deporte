@@ -11,10 +11,15 @@ Version: 2.0 (FASE 3)
 Author: Scout AI
 """
 
-# FASE 1-2 imports (with error handling)
+import logging
+
+logger = logging.getLogger(__name__)
+
+# FASE 1-2 imports
 try:
     from .video_processor import VideoProcessor, ProcessingConfig, ProcessingResult
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import VideoProcessor from pipeline.video_processor: {e}")
     VideoProcessor = None
     ProcessingConfig = None
     ProcessingResult = None
@@ -26,7 +31,8 @@ try:
         ProcessingResultFase3,
         PerformanceBenchmark
     )
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import VideoProcessorFase3: {e}")
     VideoProcessorFase3 = None
     ProcessingConfigFase3 = None
     ProcessingResultFase3 = None
@@ -34,7 +40,8 @@ except ImportError:
 
 try:
     from .frame_processor import FrameProcessor, FrameData, Detection, DetectionQuality
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import FrameProcessor: {e}")
     FrameProcessor = None
     FrameData = None
     Detection = None
@@ -49,7 +56,8 @@ try:
         PipelineResult,
         process_video_simple
     )
-except ImportError:
+except ImportError as e:
+    logger.error(f"Failed to import IntegratedAnalysisPipeline: {e}")
     IntegratedAnalysisPipeline = None
     FrameResult = None
     PipelineResult = None

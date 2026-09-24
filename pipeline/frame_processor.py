@@ -20,7 +20,7 @@ from enum import Enum
 import traceback
 from datetime import datetime
 
-from ..utils.video_reader import ColorSpaceConverter
+from utils.video_reader import ColorSpaceConverter
 
 
 class DetectionQuality(Enum):

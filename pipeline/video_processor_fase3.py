@@ -30,11 +30,11 @@ import io
 
 from tqdm import tqdm
 
-from .frame_processor import FrameProcessor, FrameData
-from ..utils.video_reader import VideoReader, OpenCVVideoReader
-from ..core.team_classifier import TeamClassifier
-from ..core.tracker import PlayerTracker
-from ..core.jersey_number_detector import JerseyNumberDetector
+from pipeline.frame_processor import FrameProcessor, FrameData
+from utils.video_reader import VideoReader, OpenCVVideoReader
+from core.team_classifier import TeamClassifier
+from core.tracker import PlayerTracker
+from core.jersey_number_detector import JerseyNumberDetector
 
 
 @dataclass

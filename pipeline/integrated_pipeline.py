@@ -25,9 +25,9 @@ import numpy as np
 
 # Importar componentes disponibles
 try:
-    from core.detector import BallDetector
+    from core.detector import UnifiedDetector
 except ImportError:
-    BallDetector = None
+    UnifiedDetector = None
 
 try:
     from core.tracker import PlayerTracker
@@ -135,7 +135,7 @@ class IntegratedAnalysisPipeline:
         self.config = config or ProcessingConfig()
 
         # Inicializar componentes (con validación)
-        self.detector = None  # Se inicializa en process_video si está disponible
+        self.detector = self._initialize_detector()
         self.tracker = PlayerTracker() if PlayerTracker else None
         self.distance_analyzer = (
             DistanceVelocityAnalyzer(
@@ -167,6 +167,59 @@ class IntegratedAnalysisPipeline:
         self.quality_metrics = None
         self.applied_adaptive_config = None
 
+    def _initialize_detector(self) -> Optional['UnifiedDetector']:
+        """
+        Inicializar el detector unificado con los modelos YOLO.
+
+        Returns:
+            UnifiedDetector inicializado o None si hay error
+
+        Raises:
+            ValueError: Si no se encuentran los archivos de modelos o falsa inicialización
+        """
+        if not UnifiedDetector:
+            logger.warning("UnifiedDetector no disponible - módulo no importado")
+            return None
+
+        # Rutas a los modelos (basadas en la estructura del proyecto)
+        base_dir = Path(__file__).parent.parent / "data"
+        player_model = base_dir / "football-player-detection.pt"
+        ball_model = base_dir / "football-ball-detection.pt"
+        pitch_model = base_dir / "football-pitch-detection.pt"
+
+        # Validar que existen los archivos
+        models_to_check = {
+            'player': player_model,
+            'ball': ball_model,
+            'pitch': pitch_model
+        }
+
+        missing_models = [name for name, path in models_to_check.items() if not path.exists()]
+        if missing_models:
+            error_msg = f"Modelos YOLO no encontrados: {', '.join(missing_models)}"
+            logger.error(error_msg)
+            self.warnings.append(error_msg)
+            return None
+
+        try:
+            detector = UnifiedDetector(
+                player_model_path=str(player_model),
+                ball_model_path=str(ball_model),
+                pitch_model_path=str(pitch_model),
+                device="cpu"  # Usar CPU por defecto, puede cambiar a "cuda" si hay GPU
+            )
+            logger.info("Detector unificado inicializado correctamente")
+            logger.info(f"  - Player model: {player_model}")
+            logger.info(f"  - Ball model: {ball_model}")
+            logger.info(f"  - Pitch model: {pitch_model}")
+            return detector
+
+        except Exception as e:
+            error_msg = f"Error al inicializar detector: {str(e)}"
+            logger.error(error_msg)
+            self.warnings.append(error_msg)
+            return None
+
     def process_video(self, video_path: str, output_dir: Optional[str] = None) -> PipelineResult:
         """
         Procesar video completo y generar análisis.
@@ -177,9 +230,22 @@ class IntegratedAnalysisPipeline:
 
         Returns:
             PipelineResult con estadísticas completas
+
+        Raises:
+            RuntimeError: Si el detector no está disponible
         """
         import time
         start_time = time.time()
+
+        # Validación crítica: detector debe estar inicializado
+        if self.detector is None:
+            error_msg = (
+                "DETECTOR NO INICIALIZADO: No se pueden procesar frames. "
+                "Verifica que los modelos YOLO están en data/ (football-player-detection.pt, "
+                "football-ball-detection.pt, football-pitch-detection.pt)"
+            )
+            logger.critical(error_msg)
+            raise RuntimeError(error_msg)
 
         video_path = Path(video_path)
         if not video_path.exists():
@@ -337,36 +403,56 @@ class IntegratedAnalysisPipeline:
         start = time.time()
 
         try:
-            # 1. Detectar jugadores y balón
-            detections = self.detector.detect(frame)
+            # Validación: detector debe estar disponible
+            if self.detector is None:
+                raise RuntimeError(
+                    f"Detector no disponible en frame {frame_idx}. "
+                    "Esto indica un error crítico en la inicialización."
+                )
 
-            # 2. Rastrar
-            tracks = self.tracker.update(detections)
+            # 1. Detectar jugadores, balón y cancha
+            detection_result = self.detector.detect_frame(
+                frame,
+                player_conf=self.config.confidence_threshold,
+                ball_conf=self.config.confidence_threshold,
+                pitch_conf=self.config.confidence_threshold
+            )
 
-            # 3. Registrar trayectorias
-            for track_id, track in tracks.items():
-                if track.confidence >= self.config.confidence_threshold:
-                    track_point = TrackPoint(
-                        frame=frame_idx,
-                        x=track.bbox[0] + track.bbox[2] / 2,
-                        y=track.bbox[1] + track.bbox[3] / 2,
-                        confidence=track.confidence,
-                        is_interpolated=False
-                    )
-                    self.player_tracks[track_id].append(track_point)
+            # 2. Rastrar jugadores usando detecciones
+            # CORRECCIÓN: usar track() no update() - track() retorna stats, no tracks
+            self.tracker.track(detection_result['players'], frame_id=frame_idx)
+
+            # 3. Obtener tracks activos (CORRECCIÓN: usar get_tracks())
+            active_tracks = self.tracker.get_tracks(min_confidence=self.config.confidence_threshold)
+
+            # Registrar trayectorias
+            for track_dict in active_tracks:
+                track_id = track_dict['track_id']
+                position = track_dict['position']  # Tupla (x, y)
+                confidence = track_dict['confidence']
+
+                track_point = TrackPoint(
+                    frame=frame_idx,
+                    x=position[0],
+                    y=position[1],
+                    confidence=confidence,
+                    is_interpolated=False
+                )
+                self.player_tracks[track_id].append(track_point)
 
             elapsed = (time.time() - start) * 1000
 
             return FrameResult(
                 frame_idx=frame_idx,
-                players=self._format_detections(tracks),
-                ball=self._extract_ball(detections),
-                pitch_detected=True,  # TODO: Agregar detección real
+                players=self._format_detections(active_tracks),
+                ball=self._extract_ball_from_detection(detection_result),
+                pitch_detected=detection_result['pitch']['valid'],
                 processing_time_ms=elapsed
             )
 
         except Exception as e:
             self.errors.append(f"Error en frame {frame_idx}: {str(e)}")
+            logger.error(f"Frame {frame_idx} error: {str(e)}", exc_info=True)
             return FrameResult(
                 frame_idx=frame_idx,
                 players=[],
@@ -375,21 +461,48 @@ class IntegratedAnalysisPipeline:
                 processing_time_ms=0
             )
 
-    def _format_detections(self, tracks: Dict) -> List[Dict]:
-        """Formatear detecciones para exportación."""
+    def _format_detections(self, tracks_list: List[Dict]) -> List[Dict]:
+        """
+        Formatear detecciones para exportación.
+
+        Args:
+            tracks_list: Lista de dicts con información de tracks (de get_tracks())
+
+        Returns:
+            Lista de dicts formateados para exportación
+        """
         formatted = []
-        for track_id, track in tracks.items():
+        for track_dict in tracks_list:
+            # CORRECCIÓN: track_dict ya es un diccionario, no un objeto TrackState
+            # No usar track.class_name que no existe
             formatted.append({
-                'id': track_id,
-                'bbox': track.bbox,
-                'confidence': track.confidence,
-                'class': track.class_name
+                'id': track_dict['track_id'],
+                'bbox': track_dict['bbox'],
+                'confidence': track_dict['confidence'],
+                'team_id': track_dict.get('team_id'),
+                'jersey_number': track_dict.get('jersey_number'),
+                'position': track_dict['position']
             })
         return formatted
 
-    def _extract_ball(self, detections) -> Optional[Tuple[float, float]]:
-        """Extraer posición del balón de detecciones."""
-        # TODO: Implementar lógica real
+    def _extract_ball_from_detection(self, detection_result: Dict) -> Optional[Tuple[float, float]]:
+        """
+        Extraer posición del balón de detecciones.
+
+        Args:
+            detection_result: Resultado del detector.detect_frame()
+
+        Returns:
+            Tupla (x, y) del centro del balón o None
+        """
+        if not detection_result or 'ball' not in detection_result:
+            return None
+
+        ball_data = detection_result.get('ball', {})
+        if ball_data.get('detected') and ball_data.get('center'):
+            center = ball_data['center']
+            return (float(center[0]), float(center[1]))
+
         return None
 
     def _aggregate_player_stats(self) -> Dict:
@@ -402,39 +515,45 @@ class IntegratedAnalysisPipeline:
 
             try:
                 # Distancia y velocidad
+                # CORRECCIÓN: analyze_player_trajectory retorna Dict, no objeto
                 distance_analysis = self.distance_analyzer.analyze_player_trajectory(tracks)
 
                 # Intensidad
-                velocities = np.array(distance_analysis.velocity.velocity_per_frame)
+                # CORRECCIÓN: acceder a campos del diccionario con ['key']
+                velocities = np.array(distance_analysis['velocity'].velocity_per_frame)
                 positions = [(t.x, t.y) for t in tracks]
                 intensity_metrics = self.intensity_analyzer.analyze(velocities, positions)
 
                 # Heatmap
+                # CORRECCIÓN: convertir TrackPoint a tuplas (x, y) para heatmap
+                track_positions = [(t.x, t.y) for t in tracks]
                 heatmap_data = self.heatmap_manager.generate_complete_analysis(
-                    tracks=[t for t in tracks],
-                    player_id=player_id
+                    tracks=track_positions,
+                    player_id=player_id,
+                    fps=int(self.config.fps)
                 )
 
                 # Agregar al agregador
+                # CORRECCIÓN: acceder a campos del diccionario y dataclass correctamente
                 stats = self.stats_aggregator.aggregate_player_stats(
                     player_id=player_id,
                     player_number=player_id,
                     player_name=f"Player {player_id}",
                     position="MID",
                     distance_metrics={
-                        'total_distance_m': distance_analysis.distance.total_distance
+                        'total_distance_m': distance_analysis['distance'].total_distance
                     },
                     velocity_metrics={
-                        'max_velocity_m_s': distance_analysis.velocity.max_velocity,
-                        'avg_velocity_m_s': distance_analysis.velocity.average_velocity,
-                        'median_velocity_m_s': distance_analysis.velocity.median_velocity,
-                        'percentile_90_m_s': distance_analysis.velocity.percentile_90,
-                        'percentile_95_m_s': distance_analysis.velocity.percentile_95,
+                        'max_velocity_m_s': distance_analysis['velocity'].max_velocity,
+                        'avg_velocity_m_s': distance_analysis['velocity'].average_velocity,
+                        'median_velocity_m_s': distance_analysis['velocity'].median_velocity,
+                        'percentile_90_m_s': distance_analysis['velocity'].percentile_90,
+                        'percentile_95_m_s': distance_analysis['velocity'].percentile_95,
                     },
                     intensity_metrics={
-                        'movement_intensity_percent': intensity_metrics.movement_intensity_percent,
-                        'sprints_count': intensity_metrics.sprints_count,
-                        'directional_changes': intensity_metrics.directional_changes,
+                        'movement_intensity_percent': intensity_metrics.active_movement_percentage,
+                        'sprints_count': intensity_metrics.sprint_count,
+                        'directional_changes': intensity_metrics.direction_changes_count,
                     }
                 )
 
