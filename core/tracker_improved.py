@@ -440,7 +440,15 @@ class ByteTrackImproved:
 
     def _match_detections_to_tracks(self, detections: List[Dict]) -> Tuple[List[Tuple[int, int]], List[int]]:
         """
-        Empareja detecciones con tracks existentes usando IoU y validación.
+        Empareja detecciones con tracks existentes usando Algoritmo Húngaro.
+
+        Proporciona asignación óptima 1-a-1 garantizando que cada detección
+        se asigna a MÁXIMO un track, evitando duplicación de movimientos.
+
+        ALGORITMO en DOS ETAPAS (como ByteTrack):
+        1. Etapa alta: tracks vs detecciones con IoU > high_match_threshold
+        2. Etapa baja: tracks sin pareja vs detecciones restantes con IoU > low_match_threshold
+           (para recuperar detecciones de jugadores parcialmente ocluidos)
 
         Args:
             detections (List[Dict]): Detecciones del frame actual
@@ -448,49 +456,110 @@ class ByteTrackImproved:
         Returns:
             Tuple con matches y detecciones no emparejadas
         """
+        if not detections:
+            return [], list(range(len(detections)))
+
+        track_ids = list(self.tracks.keys())
+        if not track_ids:
+            return [], list(range(len(detections)))
+
+        # --- ETAPA 1: Tracks vs detecciones con IoU alto ---
         matched_pairs = []
-        unmatched_detections = list(range(len(detections)))
+        used_dets = set()
 
-        # Primera pasada: matches con IoU alto
-        for track_id, track in list(self.tracks.items()):
-            best_match_idx = -1
-            best_iou = 0.0
+        # Construir matriz de IoU para tracks existentes
+        track_boxes = [self.tracks[tid].bbox for tid in track_ids]
+        det_boxes = [d['bbox'] for d in detections]
 
-            for det_idx in unmatched_detections:
-                detection = detections[det_idx]
+        iou_matrix = np.zeros((len(track_ids), len(det_boxes)), dtype=float)
+        for i, track_id in enumerate(track_ids):
+            track = self.tracks[track_id]
+            for j, detection in enumerate(detections):
                 iou = self._calculate_iou(track.bbox, detection['bbox'])
+                iou_matrix[i, j] = iou
 
-                if iou > best_iou and iou > self.high_match_threshold:
-                    # Validar consistencia
+        # Aplicar validación de consistencia al matrix
+        valid_matrix = iou_matrix.copy()
+        for i, track_id in enumerate(track_ids):
+            track = self.tracks[track_id]
+            for j, detection in enumerate(detections):
+                if iou_matrix[i, j] > self.high_match_threshold:
                     is_valid, _ = self._validate_track_consistency(track, detection)
-                    if is_valid:
-                        best_iou = iou
-                        best_match_idx = det_idx
+                    if not is_valid:
+                        valid_matrix[i, j] = 0.0
 
-            if best_match_idx >= 0:
-                matched_pairs.append((track_id, best_match_idx))
-                unmatched_detections.remove(best_match_idx)
+        # Asignación húngara para etapa 1
+        high_iou_threshold = self.high_match_threshold
+        cost_matrix = -valid_matrix.copy()
+        cost_matrix[valid_matrix < high_iou_threshold] = 1.0  # Marcar como no viables
 
-        # Segunda pasada: matches con IoU bajo (para detecciones perdidas)
-        for track_id, track in list(self.tracks.items()):
-            if track_id in [t for t, _ in matched_pairs]:
-                continue
+        try:
+            rows, cols = linear_sum_assignment(cost_matrix)
+            for i, j in zip(rows, cols):
+                if iou_matrix[i, j] >= high_iou_threshold and valid_matrix[i, j] > 0:
+                    matched_pairs.append((track_ids[i], j))
+                    used_dets.add(j)
+        except Exception:
+            # Fallback a greedy si scipy falla
+            for i in range(len(track_ids)):
+                best_j = -1
+                best_score = high_iou_threshold
+                for j in range(len(det_boxes)):
+                    if j not in used_dets and valid_matrix[i, j] > best_score:
+                        best_j = j
+                        best_score = valid_matrix[i, j]
+                if best_j >= 0:
+                    matched_pairs.append((track_ids[i], best_j))
+                    used_dets.add(best_j)
 
-            best_match_idx = -1
-            best_iou = 0.0
+        # --- ETAPA 2: Tracks sin pareja vs detecciones restantes con IoU bajo ---
+        matched_track_ids = {t for t, _ in matched_pairs}
+        unmatched_track_indices = [i for i, tid in enumerate(track_ids) if tid not in matched_track_ids]
+        unmatched_det_indices = [j for j in range(len(detections)) if j not in used_dets]
 
-            for det_idx in unmatched_detections:
-                detection = detections[det_idx]
-                iou = self._calculate_iou(track.bbox, detection['bbox'])
+        if unmatched_track_indices and unmatched_det_indices:
+            # Construir submatriz para etapa 2
+            low_iou_matrix = np.zeros((len(unmatched_track_indices), len(unmatched_det_indices)))
+            low_valid_matrix = low_iou_matrix.copy()
 
-                if iou > best_iou and iou > self.low_match_threshold:
-                    best_iou = iou
-                    best_match_idx = det_idx
+            for ii, i in enumerate(unmatched_track_indices):
+                track_id = track_ids[i]
+                track = self.tracks[track_id]
+                for jj, j in enumerate(unmatched_det_indices):
+                    detection = detections[j]
+                    iou = self._calculate_iou(track.bbox, detection['bbox'])
+                    low_iou_matrix[ii, jj] = iou
 
-            if best_match_idx >= 0:
-                matched_pairs.append((track_id, best_match_idx))
-                unmatched_detections.remove(best_match_idx)
+                    if iou > self.low_match_threshold:
+                        is_valid, _ = self._validate_track_consistency(track, detection)
+                        if is_valid:
+                            low_valid_matrix[ii, jj] = iou
 
+            # Asignación húngara para etapa 2
+            low_threshold = self.low_match_threshold
+            low_cost = -low_valid_matrix.copy()
+            low_cost[low_valid_matrix < low_threshold] = 1.0
+
+            try:
+                rows, cols = linear_sum_assignment(low_cost)
+                for ii, jj in zip(rows, cols):
+                    if low_iou_matrix[ii, jj] >= low_threshold and low_valid_matrix[ii, jj] > 0:
+                        matched_pairs.append((track_ids[unmatched_track_indices[ii]], unmatched_det_indices[jj]))
+                        used_dets.add(unmatched_det_indices[jj])
+            except Exception:
+                # Fallback a greedy
+                for ii, i in enumerate(unmatched_track_indices):
+                    best_jj = -1
+                    best_score = low_threshold
+                    for jj, j in enumerate(unmatched_det_indices):
+                        if unmatched_det_indices[jj] not in used_dets and low_valid_matrix[ii, jj] > best_score:
+                            best_jj = jj
+                            best_score = low_valid_matrix[ii, jj]
+                    if best_jj >= 0:
+                        matched_pairs.append((track_ids[unmatched_track_indices[ii]], unmatched_det_indices[best_jj]))
+                        used_dets.add(unmatched_det_indices[best_jj])
+
+        unmatched_detections = [j for j in range(len(detections)) if j not in used_dets]
         return matched_pairs, unmatched_detections
 
     def track(self, detections: List[Dict], frame_image: Optional[np.ndarray] = None,
