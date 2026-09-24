@@ -66,6 +66,9 @@ data/*.avi
 data/*.mov
 data/models/
 data/*.pt
+core/data/statsbomb_raw/*.json
+*.pt
+yolov8*.pt
 
 # AI Models (too large for GitHub)
 data/football-*_openvino_model/
