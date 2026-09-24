@@ -1,9 +1,9 @@
 """
-feature_extractor.py - Extracción de características visuales
+feature_extractor.py - Extraccion de características visuales (versión simplificada)
 
 Extrae características de apariencia de los jugadores:
 - Histograma de color RGB
-- HOG (Histogram of Oriented Gradients)
+- Características de gradiente simple
 
 Usado para mejor matching entre tracks y detecciones.
 """
@@ -21,24 +21,20 @@ class FeatureExtractor:
     Extractor de características visuales (sin CNN).
 
     Combina:
-    - Color histogram (40D)
-    - HOG features (324D)
-    = 364D total
+    - Color histogram (48D)
+    - Gradient features (200D)
+    = 248D total
 
     Computation: ~1ms per image en CPU
     """
 
-    def __init__(self,
-                 color_bins: int = 16,
-                 hog_cells_per_block: Tuple[int, int] = (8, 8)):
+    def __init__(self, color_bins: int = 16):
         """
         Args:
-            color_bins: Bins por canal RGB (total: 3 * color_bins)
-            hog_cells_per_block: Tamaño de celda para HOG
+            color_bins: Bins por canal RGB
         """
         self.color_bins = color_bins
-        self.hog_cells_per_block = hog_cells_per_block
-        self.feature_dim = 3 * color_bins + 324  # 40 + 324
+        self.feature_dim = 3 * color_bins + 200  # 48 + 200
 
     def extract_color_histogram(self,
                                bbox: np.ndarray,
@@ -51,7 +47,7 @@ class FeatureExtractor:
             frame: Imagen BGR
 
         Returns:
-            Feature vector (40D): Histograma normalizado RGB
+            Feature vector (48D): Histograma normalizado RGB
         """
         x1, y1, x2, y2 = bbox.astype(int)
         x1 = max(0, x1)
@@ -76,18 +72,18 @@ class FeatureExtractor:
         feature = np.concatenate(hist).astype(np.float32)
         return feature
 
-    def extract_hog_features(self,
-                            bbox: np.ndarray,
-                            frame: np.ndarray) -> np.ndarray:
+    def extract_gradient_features(self,
+                                 bbox: np.ndarray,
+                                 frame: np.ndarray) -> np.ndarray:
         """
-        Extrae HOG features del bbox.
+        Extrae características de gradiente (alternativa simple a HOG).
 
         Args:
             bbox: [x1, y1, x2, y2]
             frame: Imagen BGR
 
         Returns:
-            Feature vector (324D): HOG descriptor
+            Feature vector (200D): Características de gradiente
         """
         x1, y1, x2, y2 = bbox.astype(int)
         x1 = max(0, x1)
@@ -96,24 +92,38 @@ class FeatureExtractor:
         y2 = min(frame.shape[0], y2)
 
         if x2 <= x1 or y2 <= y1:
-            return np.zeros(324, dtype=np.float32)
+            return np.zeros(200, dtype=np.float32)
 
         roi = frame[y1:y2, x1:x2]
 
-        # Redimensionar a tamaño estándar (64x128 típico)
-        roi_resized = cv2.resize(roi, (64, 128))
+        # Redimensionar a tamaño estándar
+        roi_resized = cv2.resize(roi, (32, 64))
 
         # Convertir a escala de grises
         roi_gray = cv2.cvtColor(roi_resized, cv2.COLOR_BGR2GRAY)
 
-        # Calcular HOG
-        hog = cv2.HOGDescriptor()
-        features = hog.compute(roi_gray)
+        # Calcular gradientes
+        gx = cv2.Sobel(roi_gray, cv2.CV_32F, 1, 0, ksize=3)
+        gy = cv2.Sobel(roi_gray, cv2.CV_32F, 0, 1, ksize=3)
 
-        if features is None:
-            return np.zeros(324, dtype=np.float32)
+        # Magnitud y ángulo
+        magnitude, angle = cv2.cartToPolar(gx, gy)
 
-        features = features.flatten().astype(np.float32)
+        # Características: histogramas de magnitud en diferentes direcciones
+        hist_mag = cv2.calcHist([magnitude], [0], None, [8], [0, magnitude.max()+1])
+        hist_angle = cv2.calcHist([angle], [0], None, [8], [0, 360])
+
+        features = np.concatenate([
+            hist_mag.flatten(),
+            hist_angle.flatten(),
+            magnitude.flatten()[:128],  # Muestra de magnitud
+        ]).astype(np.float32)
+
+        # Pad a 200
+        if features.shape[0] < 200:
+            features = np.pad(features, (0, 200 - features.shape[0]), mode='constant')
+        else:
+            features = features[:200]
 
         # Normalizar
         norm = np.linalg.norm(features)
@@ -134,10 +144,10 @@ class FeatureExtractor:
             bbox: [x1, y1, x2, y2]
             frame: Imagen BGR
             use_color: Incluir histograma color
-            use_hog: Incluir HOG
+            use_hog: Incluir características gradiente
 
         Returns:
-            Feature vector (364D por defecto)
+            Feature vector (248D por defecto)
         """
         features = []
 
@@ -146,8 +156,8 @@ class FeatureExtractor:
             features.append(color_feat)
 
         if use_hog:
-            hog_feat = self.extract_hog_features(bbox, frame)
-            features.append(hog_feat)
+            grad_feat = self.extract_gradient_features(bbox, frame)
+            features.append(grad_feat)
 
         if not features:
             return np.zeros(self.feature_dim, dtype=np.float32)
@@ -185,24 +195,6 @@ class FeatureExtractor:
         distance = 1.0 - np.dot(f1, f2)
 
         return float(np.clip(distance, 0.0, 2.0))
-
-    @staticmethod
-    def euclidean_distance(feat1: np.ndarray,
-                          feat2: np.ndarray) -> float:
-        """
-        Calcula distancia euclidea entre dos características.
-
-        Args:
-            feat1: Feature vector 1
-            feat2: Feature vector 2
-
-        Returns:
-            Distancia euclidea
-        """
-        if feat1.size == 0 or feat2.size == 0:
-            return float('inf')
-
-        return float(np.linalg.norm(feat1 - feat2))
 
 
 class FeatureBank:

@@ -37,8 +37,8 @@ class KalmanFilter:
         # Matriz de transición (modelo de movimiento constante)
         # Estado siguiente = F * Estado anterior
         self.F = np.eye(ndim, ndim)
-        for i in range(4):
-            self.F[i, i + 4] = dt  # Agregar velocidad a posición
+        for i in range(2):  # Solo x, y tienen velocidades
+            self.F[i, i + 5] = dt  # Agregar velocidades vx, vy a posición x, y
 
         # Matriz de medición
         # Solo observamos posición y tamaño, no velocidad
