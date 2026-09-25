@@ -295,6 +295,11 @@ class FootballAnalysisPipeline:
                 tracks.tracker_id, tracks.xyxy, team_labels
             ):
                 x1, y1, x2, y2 = bbox.astype(int)
+
+                # Validar que no hay NaN
+                if np.any(np.isnan([x1, y1, x2, y2])) or np.any(np.isinf([x1, y1, x2, y2])):
+                    continue
+
                 color = tuple(colors[int(team_id) % 2].tolist())
 
                 # Dibujar bbox

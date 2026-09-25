@@ -61,8 +61,9 @@ class ImprovedTeamAssigner:
             # Obtener color dominante usando KMeans en la región
             pixels = player_region.reshape(-1, 3).astype(np.float32)
 
-            # Usar solo 30% de píxeles para acelerar
-            sample_idx = np.random.choice(len(pixels), size=max(100, len(pixels)//3), replace=False)
+            # Usar solo 30% de píxeles para acelerar (pero no más de los disponibles)
+            sample_size = min(len(pixels), max(100, len(pixels)//3))
+            sample_idx = np.random.choice(len(pixels), size=sample_size, replace=False)
             pixels_sample = pixels[sample_idx]
 
             kmeans = KMeans(n_clusters=3, n_init=3, max_iter=10, random_state=42)

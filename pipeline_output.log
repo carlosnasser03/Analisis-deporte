@@ -1,0 +1,38 @@
+2026-09-25 09:57:22,848 - __main__ - INFO - Inicializando componentes...
+2026-09-25 09:57:23,310 - __main__ - INFO - \u2713 Detector inicializado
+2026-09-25 09:57:23,311 - __main__ - INFO - \u2713 Deep SORT Tracker inicializado
+2026-09-25 09:57:23,311 - __main__ - INFO - \u2713 Team Assigner inicializado
+2026-09-25 09:57:23,311 - __main__ - INFO - \u2713 Possession Analyzer inicializado
+2026-09-25 09:57:23,311 - __main__ - INFO - \u2713 Metrics Calculator inicializado
+2026-09-25 09:57:23,311 - __main__ - INFO - Iniciando procesamiento: data/0bfacc_0.mp4
+2026-09-25 09:57:23,379 - __main__ - INFO - Video: 1920x1080 @ 25.0 FPS, 750 frames
+2026-09-25 09:57:23,386 - __main__ - INFO - Escribiendo a: results_demo\output_0bfacc_0.mp4
+2026-09-25 09:57:51,748 - __main__ - INFO - Frame 30/750 - FPS: 1.1, Tracks: 25
+2026-09-25 09:58:19,347 - __main__ - INFO - Frame 60/750 - FPS: 1.1, Tracks: 25
+2026-09-25 09:58:47,079 - __main__ - INFO - Frame 90/750 - FPS: 1.1, Tracks: 29
+2026-09-25 09:59:19,539 - __main__ - INFO - Frame 120/750 - FPS: 0.9, Tracks: 31
+2026-09-25 09:59:51,070 - __main__ - INFO - Frame 150/750 - FPS: 1.0, Tracks: 33
+2026-09-25 10:00:23,131 - __main__ - INFO - Frame 180/750 - FPS: 0.9, Tracks: 33
+2026-09-25 10:00:55,372 - __main__ - INFO - Frame 210/750 - FPS: 0.9, Tracks: 33
+2026-09-25 10:01:27,970 - __main__ - INFO - Frame 240/750 - FPS: 0.9, Tracks: 33
+2026-09-25 10:01:59,371 - __main__ - INFO - Frame 270/750 - FPS: 1.0, Tracks: 33
+2026-09-25 10:02:31,399 - __main__ - INFO - Frame 300/750 - FPS: 0.9, Tracks: 34
+Traceback (most recent call last):
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\main_deep_sort_integrated.py", line 398, in <module>
+    main()
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\main_deep_sort_integrated.py", line 394, in main
+    pipeline.process_video(args.video)
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\main_deep_sort_integrated.py", line 170, in process_video
+    annotated = self.process_frame(frame, frame_idx)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\main_deep_sort_integrated.py", line 244, in process_frame
+    team_labels, team_diag = self.team_assigner.assign_teams(frame, tracks_sv)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\football_tracking_integration\improved_team_assigner.py", line 108, in assign_teams
+    color = self.get_player_color(frame, bbox)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\cavilez\Desktop\Proyectos\Anlisis deporte\football_tracking_integration\improved_team_assigner.py", line 65, in get_player_color
+    sample_idx = np.random.choice(len(pixels), size=max(100, len(pixels)//3), replace=False)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "numpy/random/mtrand.pyx", line 1025, in numpy.random.mtrand.RandomState.choice
+ValueError: Cannot take a larger sample than population when 'replace=False'
