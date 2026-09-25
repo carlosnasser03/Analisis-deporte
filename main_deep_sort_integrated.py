@@ -294,10 +294,15 @@ class FootballAnalysisPipeline:
             for track_id, bbox, team_id in zip(
                 tracks.tracker_id, tracks.xyxy, team_labels
             ):
-                x1, y1, x2, y2 = bbox.astype(int)
+                # Validar bbox antes de procesar
+                if np.any(np.isnan(bbox)) or np.any(np.isinf(bbox)):
+                    continue
 
-                # Validar que no hay NaN
-                if np.any(np.isnan([x1, y1, x2, y2])) or np.any(np.isinf([x1, y1, x2, y2])):
+                x1, y1, x2, y2 = bbox
+                x1, y1, x2, y2 = int(max(0, x1)), int(max(0, y1)), int(min(w, x2)), int(min(h, y2))
+
+                # Validar rangos
+                if x1 >= x2 or y1 >= y2:
                     continue
 
                 color = tuple(colors[int(team_id) % 2].tolist())
